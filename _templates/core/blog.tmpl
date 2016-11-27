@@ -1,0 +1,57 @@
+{{ define "title"}}{{.Title}}{{ end }}
+
+{{ define "content" }}
+    <div class="container">
+        <div class="row">
+
+            <aside class="col-md-3 blog-info">
+                <a href="//{{.blog.GetUrl}}">
+                    <h1>
+                        {{.blog.Title}}
+                    </h1>
+                    <p>{{.blog.GetUrl}}</p>
+                </a>
+
+                <h2>Categories</h2>
+                <ul class="categories">
+                    {{range .categories}}
+                        <li>
+                            <div class="title">{{.Name}}</div>
+                        </li>
+                    {{end}}
+                </ul>
+
+                <h2>Tags</h2>
+                <ul class="tags">
+                    {{range .tags}}
+                        <li>#{{.Name}}</li>
+                    {{end}}
+                </ul>
+            </aside>
+
+            <div class="col-md-9">
+                <div class="posts">
+                    {{range .posts}}
+                        <article>
+                            <div>
+                                <h1>
+                                    <a href="//{{.GetUrl}}">{{.Title}}</a>
+                                </h1>
+                                <ul class="tags">
+                                    {{range .Tags}}
+                                        <li>#{{.Name}}</li>
+                                    {{end}}
+                                </ul>
+                            </div>
+                            <div>
+                                <time class="timeago" datetime="{{.Date}}">{{.Date}}</time>
+                                <p class="category">{{.GetCategory.Name}}</p>
+                            </div>
+                        </article>
+                    {{end}}
+                </div>
+            </div>
+
+        </div>
+    </div>
+{{ end }}

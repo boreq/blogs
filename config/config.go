@@ -21,6 +21,8 @@ func createDefaultConfig() *ConfigStruct {
 	return conf
 }
 
+// Load loads the config from the specified json file. If the certain keys
+// are not present in the loaded config file, the default values are used.
 func Load(filename string) error {
 	content, e := ioutil.ReadFile(filename)
 	if os.IsNotExist(e) {

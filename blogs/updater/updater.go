@@ -1,4 +1,4 @@
-package blogs
+package updater
 
 import (
 	"github.com/boreq/blogs/blogs/loaders"
@@ -28,16 +28,19 @@ type blogUpdater struct {
 	blog           *database.Blog
 }
 
+// Run performs a full update of the blog.
 func (u *blogUpdater) Run() {
 	start := time.Now()
 
-	u.createBlogDatabaseEntry()
+	u.blog = u.updateBlogDatabaseEntry()
 	u.updatePosts()
 
 	u.stats.ElapsedTime = time.Since(start)
 }
 
-func (u *blogUpdater) createBlogDatabaseEntry() {
+// updateBlogDatabaseEntry ensures that there is a proper entry in the blogs
+// table and returns it.
+func (u *blogUpdater) updateBlogDatabaseEntry() *database.Blog {
 	blog := &database.Blog{}
 	database.DB.FirstOrInit(&blog, &database.Blog{InternalID: u.blogDatabaseID})
 
@@ -46,7 +49,6 @@ func (u *blogUpdater) createBlogDatabaseEntry() {
 	if err != nil {
 		u.stats.Errors = append(u.stats.Errors, err)
 	} else {
-		log.Debug("downloaded a title")
 		blog.Title = title
 	}
 
@@ -57,21 +59,24 @@ func (u *blogUpdater) createBlogDatabaseEntry() {
 		database.DB.Save(blog)
 	}
 
-	u.blog = blog
+	return blog
 }
 
+// getOrCreateCategory returns an existing category or creates it.
 func (u *blogUpdater) getOrCreateCategory(name string) *database.Category {
 	category := &database.Category{}
 	database.DB.FirstOrCreate(&category, &database.Category{BlogID: u.blog.ID, Name: name})
 	return category
 }
 
+// getOrCreateTag returns an existing tag or creates it.
 func (u *blogUpdater) getOrCreateTag(name string) *database.Tag {
 	tag := &database.Tag{}
 	database.DB.FirstOrCreate(&tag, &database.Tag{Name: name})
 	return tag
 }
 
+// updatePosts downloads and updates all posts made on the blog.
 func (u *blogUpdater) updatePosts() {
 	posts, errors := u.loader.LoadPosts()
 	for {
@@ -96,9 +101,10 @@ func (u *blogUpdater) updatePosts() {
 	}
 }
 
+// handlePost updates a single post received from the loader.
 func (u *blogUpdater) handlePost(loadedPost loaders.Post) {
 	post := &database.Post{}
-	database.DB.FirstOrInit(&post, &database.Post{InternalID: loadedPost.Id})
+	database.DB.Preload("Tags").FirstOrInit(&post, &database.Post{InternalID: loadedPost.Id})
 
 	altered := false
 	if post.Date != loadedPost.Date {
@@ -121,17 +127,16 @@ func (u *blogUpdater) handlePost(loadedPost loaders.Post) {
 		database.DB.Save(post)
 	}
 
-	tags := make([]database.Tag, 0)
-	database.DB.Model(&post).Association("Tags").Find(&tags)
-	u.addNewTags(post, loadedPost.Tags, tags)
-	u.removeOldTags(post, loadedPost.Tags, tags)
+	u.addNewTags(post, loadedPost.Tags, post.Tags)
+	u.removeOldTags(post, loadedPost.Tags, post.Tags)
 }
 
+// addNewTags ensures that all tags are present in the database.
 func (u *blogUpdater) addNewTags(post *database.Post, loadedTags []string, tags []database.Tag) {
 	for _, loadedTagName := range loadedTags {
 		loadedTag := u.getOrCreateTag(loadedTagName)
 		if tag := u.findTag(loadedTag, tags); tag == nil {
-			database.DB.Model(&post).Association("Tags").Append(tag)
+			database.DB.Model(&post).Association("Tags").Append(loadedTag)
 		}
 	}
 }
@@ -145,6 +150,7 @@ func (u *blogUpdater) findTag(loadedTag *database.Tag, tags []database.Tag) *dat
 	return nil
 }
 
+// removeOldTags ensures that all old tags are removed from the database.
 func (u *blogUpdater) removeOldTags(post *database.Post, loadedTags []string, tags []database.Tag) {
 	for _, tag := range tags {
 		if !u.findLoadedTag(tag.Name, loadedTags) {

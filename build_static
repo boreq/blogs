@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# CSS
+cat _static/css/src/style.scss \
+    | sass --stdin --scss \
+    | yui-compressor --type css \
+    > _static/css/main.css
+
+# JS
+mkdir -p _libs
+
+if [ ! -f _libs/jquery.js ]; then
+    echo "Downloading _libs/jquery.js"
+    curl http://code.jquery.com/jquery-2.2.1.min.js > _libs/jquery.js
+fi
+
+if [ ! -f _libs/jquery.timeago.js ]; then
+    echo "Downloading _libs/jquery.timeago.js"
+    curl http://timeago.yarp.com/jquery.timeago.js > _libs/jquery.timeago.js
+fi
+
+srcfiles=(_libs/jquery.js _libs/jquery.timeago.js)
+for i in ${!srcfiles[*]}
+do
+    tmpfiles[$i]=$(mktemp)
+    if [[ ${srcfiles[$i]} == *coffee ]]
+    then
+        coffee -b -c -p ${srcfiles[$i]} > ${tmpfiles[$i]}
+    else
+        cat ${srcfiles[$i]} > ${tmpfiles[$i]}
+    fi
+done
+cat ${tmpfiles[*]} | yui-compressor --type js > _static/js/main.js
+rm ${tmpfiles[*]}

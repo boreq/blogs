@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/boreq/blogs/blogs"
+	"github.com/boreq/blogs/blogs/updater"
 	"github.com/boreq/guinea"
 )
 
@@ -17,5 +17,5 @@ func runUpdate(c guinea.Context) error {
 	if err := coreInit(c.Arguments[0]); err != nil {
 		return err
 	}
-	return blogs.Update()
+	return updater.Update()
 }

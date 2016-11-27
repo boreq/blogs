@@ -1,14 +1,12 @@
-package blogs
+package updater
 
 import (
-	"github.com/boreq/blogs/logging"
+	"github.com/boreq/blogs/blogs"
 )
-
-var log = logging.GetLogger("blogs")
 
 // Update performs an update of all defined blogs.
 func Update() error {
-	for blogDatabaseID, blog := range Blogs {
+	for blogDatabaseID, blog := range blogs.Blogs {
 		updater := newBlogUpdater(blogDatabaseID, blog)
 		updater.Run()
 	}

@@ -3,15 +3,12 @@ package eevee
 import (
 	"errors"
 	"github.com/boreq/blogs/blogs/loaders"
-	utils "github.com/boreq/blogs/html"
-	"github.com/boreq/blogs/logging"
+	htmlutils "github.com/boreq/blogs/utils/html"
 	"golang.org/x/net/html"
 	"net/http"
 	"strings"
 	"time"
 )
-
-var log = logging.GetLogger("eevee")
 
 const homeURL = "https://eev.ee/"
 const archiveURL = "https://eev.ee/everything/archives/"
@@ -25,6 +22,10 @@ type blog struct{}
 
 func (b *blog) GetUrl() string {
 	return "eev.ee"
+}
+
+func (b *blog) GetPostUrl(internalID string) string {
+	return "eev.ee/" + internalID
 }
 
 func (b *blog) LoadTitle() (string, error) {
@@ -45,8 +46,8 @@ func (b *blog) LoadTitle() (string, error) {
 	titleChan := make(chan string)
 	go func() {
 		defer close(titleChan)
-		utils.WalkAllNodes(doc, func(node *html.Node) {
-			if utils.IsTextNode(node) && utils.IsHtmlNode(node.Parent, "title") {
+		htmlutils.WalkAllNodes(doc, func(node *html.Node) {
+			if htmlutils.IsTextNode(node) && htmlutils.IsHtmlNode(node.Parent, "title") {
 				titleChan <- node.Data
 			}
 		})
@@ -90,8 +91,8 @@ func (b *blog) yieldPosts(postChan chan<- loaders.Post, errorChan chan<- error) 
 	}
 
 	// Walk the HTML tree emitting posts
-	utils.WalkAllNodes(doc, func(node *html.Node) {
-		if utils.IsHtmlNode(node, "article") {
+	htmlutils.WalkAllNodes(doc, func(node *html.Node) {
+		if htmlutils.IsHtmlNode(node, "article") {
 			yieldPost(node, postChan, errorChan)
 		}
 	})
@@ -101,7 +102,7 @@ func (b *blog) yieldPosts(postChan chan<- loaders.Post, errorChan chan<- error) 
 
 func yieldPost(n *html.Node, postChan chan<- loaders.Post, errorChan chan<- error) {
 	post := loaders.Post{}
-	utils.WalkAllNodes(n, func(node *html.Node) {
+	htmlutils.WalkAllNodes(n, func(node *html.Node) {
 		populatePost(node, &post)
 	})
 	postChan <- post
@@ -109,8 +110,8 @@ func yieldPost(n *html.Node, postChan chan<- loaders.Post, errorChan chan<- erro
 
 func populatePost(n *html.Node, post *loaders.Post) {
 	// Id
-	if utils.IsHtmlNode(n, "a") && utils.IsHtmlNode(n.Parent, "h1") {
-		if val, err := utils.GetAttrVal(n, "href"); err == nil {
+	if htmlutils.IsHtmlNode(n, "a") && htmlutils.IsHtmlNode(n.Parent, "h1") {
+		if val, err := htmlutils.GetAttrVal(n, "href"); err == nil {
 			val = strings.TrimPrefix(val, "https://eev.ee/")
 			val = strings.TrimPrefix(val, "http://eev.ee/")
 			val = strings.Trim(val, "/")
@@ -119,8 +120,8 @@ func populatePost(n *html.Node, post *loaders.Post) {
 	}
 
 	// Date
-	if utils.IsHtmlNode(n, "time") {
-		if val, err := utils.GetAttrVal(n, "datetime"); err == nil {
+	if htmlutils.IsHtmlNode(n, "time") {
+		if val, err := htmlutils.GetAttrVal(n, "datetime"); err == nil {
 			if t, err := time.Parse(time.RFC3339, val); err == nil {
 				post.Date = t
 			}
@@ -128,8 +129,8 @@ func populatePost(n *html.Node, post *loaders.Post) {
 	}
 
 	// Category
-	if utils.IsHtmlNode(n, "h1") {
-		if val, err := utils.GetAttrVal(n, "class"); err == nil {
+	if htmlutils.IsHtmlNode(n, "h1") {
+		if val, err := htmlutils.GetAttrVal(n, "class"); err == nil {
 			if parts := strings.SplitN(val, "-", 2); len(parts) == 2 {
 				post.Category = parts[1]
 			}
@@ -137,12 +138,12 @@ func populatePost(n *html.Node, post *loaders.Post) {
 	}
 
 	// Title
-	if utils.IsTextNode(n) && utils.IsHtmlNode(n.Parent, "a") && utils.IsHtmlNode(n.Parent.Parent, "h1") {
+	if htmlutils.IsTextNode(n) && htmlutils.IsHtmlNode(n.Parent, "a") && htmlutils.IsHtmlNode(n.Parent.Parent, "h1") {
 		post.Title = strings.TrimSpace(n.Data)
 	}
 
 	// Tags
-	if utils.IsTextNode(n) && utils.IsHtmlNode(n.Parent, "a") && utils.HasAttrVal(n.Parent.Parent, "class", "tags") {
+	if htmlutils.IsTextNode(n) && htmlutils.IsHtmlNode(n.Parent, "a") && htmlutils.HasAttrVal(n.Parent.Parent, "class", "tags") {
 		post.Tags = append(post.Tags, strings.TrimPrefix(strings.TrimSpace(n.Data), "#"))
 	}
 }

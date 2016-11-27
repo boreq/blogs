@@ -1,10 +1,11 @@
 package core
 
 import (
+	"github.com/boreq/blogs/utils/http"
 	"github.com/julienschmidt/httprouter"
 )
 
 func Register(router *httprouter.Router) {
-	router.GET("/", index)
-	router.GET("/hello/:name", hello)
+	router.GET("/", http.WithErrorHandling(index))
+	router.GET("/blog/:id/:name", http.WithErrorHandling(blog))
 }

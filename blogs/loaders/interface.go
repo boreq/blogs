@@ -9,6 +9,10 @@ type Blog interface {
 	// should not include the scheme.
 	GetUrl() string
 
+	// GetPostUrl returns an url pointing to the specific post on the blog.
+	// The url should not include the scheme.
+	GetPostUrl(internalID string) string
+
 	// LoadTitle downloads a title of the blog.
 	LoadTitle() (string, error)
 

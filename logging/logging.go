@@ -6,9 +6,8 @@ import (
 	"os"
 )
 
-// Logger defines methods used for logging in a normal mode and a debug mode.
-// Debug mode log messages are displayed only if a proper environment variable
-// with the name stored in DebugEnvVar is set.
+// Logger defines methods used for logging in normal mode and debug mode. Debug
+// mode log messages are displayed only if a proper field is set in the config.
 type Logger interface {
 	Print(...interface{})
 	Printf(string, ...interface{})

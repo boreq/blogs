@@ -1,5 +1,8 @@
 all: build
 
+static:
+	./build_static
+
 build:
 	mkdir -p build
 	go build -o ./build/blogs ./main

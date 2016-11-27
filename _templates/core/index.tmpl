@@ -1,5 +1,23 @@
 {{ define "title"}}Index Page{{ end }}
 
 {{ define "content" }}
-    Index content.
+    <div class="container">
+        <ul class="blogs">
+            {{range .blogs}}
+                <li>
+                    <div>
+                        <a class="title" href="{{.GetAbsoluteUrl}}">
+                            <h1>
+                                {{.Title}}
+                            </h1>
+                        </a>
+                        <a class="direct-link" href="//{{.GetUrl}}">{{.GetUrl}}</a>
+                    </div>
+                    <div>
+                            <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
+                    </div>
+                </li>
+            {{end}}
+        </ul>
+    </div>
 {{ end }}
