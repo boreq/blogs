@@ -2,12 +2,14 @@ package templates
 
 import (
 	"fmt"
+	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
 	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var log = logging.GetLogger("templates")
@@ -63,6 +65,14 @@ func Load() error {
 		templates[key] = template.Must(template.ParseFiles(files...))
 	}
 	return nil
+}
+
+func GetDefaultData(r *http.Request) map[string]interface{} {
+	var data = make(map[string]interface{})
+	var ctx = context.Get(r)
+	data["user"] = ctx.User
+	data["now"] = time.Now()
+	return data
 }
 
 // renderTemplate is a wrapper around template.ExecuteTemplate.
