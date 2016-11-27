@@ -53,5 +53,8 @@ type ValidationErrors []string
 
 // AsText returns the errors separated with dots and ending with a dot.
 func (f ValidationErrors) AsText() string {
+	if len(f) == 0 {
+		return ""
+	}
 	return strings.Join(f, ". ") + "."
 }

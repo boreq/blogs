@@ -1,5 +1,9 @@
 package forms
 
+import (
+	"errors"
+)
+
 // GetFormValue is used to load parameters into the form. Usually this will
 // simply be an http.Request.FormValue.
 type GetFormValue func(string) string
@@ -34,7 +38,7 @@ func (f *Form) AddError(err string) {
 
 // Validate initializes all form fields. Calling this method calls
 // Field.Validate on all form fields. After calling this method Errors
-// will be populated and IsValid() will return the correct value.
+// will be populated and IsValid and GetValue will return the correct values.
 func (f *Form) Validate(getFormValue GetFormValue) bool {
 	for _, field := range f.Fields {
 		field.Validate(getFormValue(field.GetName()))
@@ -53,4 +57,14 @@ func (f *Form) IsValid() bool {
 		}
 	}
 	return f.Errors == nil || len(f.Errors) == 0
+}
+
+// GetValue can be called after calling Validate.
+func (f *Form) GetValue(fieldName string) (string, error) {
+	for _, field := range f.Fields {
+		if field.GetName() == fieldName {
+			return field.GetValue(), nil
+		}
+	}
+	return "", errors.New("Field not found")
 }
