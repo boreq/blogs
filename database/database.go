@@ -33,7 +33,14 @@ func Init(databaseType DatabaseType, params string) (err error) {
 	return err
 }
 
-var tables = []interface{}{&Blog{}, &Category{}, &Post{}, &Tag{}}
+var tables = []interface{}{
+	&User{},
+	&UserSession{},
+	&Blog{},
+	&Category{},
+	&Post{},
+	&Tag{},
+}
 
 // MigrateTables creates missing tables and columns.
 func MigrateTables() error {

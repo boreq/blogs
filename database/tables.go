@@ -4,8 +4,25 @@ import (
 	"fmt"
 	"github.com/boreq/blogs/blogs"
 	"github.com/boreq/blogs/utils"
+	"github.com/jinzhu/gorm"
 	"time"
 )
+
+type User struct {
+	gorm.Model
+
+	Username string `gorm:"size:255"`
+	Password string `gorm:"size:255"`
+	Sessions []UserSession
+}
+
+type UserSession struct {
+	gorm.Model
+	UserID uint `gorm:"not null"`
+
+	SessionKey string `gorm:"size:512"`
+	LastSeen   time.Time
+}
 
 type Blog struct {
 	ID uint `gorm:"primary_key"`
