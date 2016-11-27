@@ -3,6 +3,7 @@ package utils
 import (
 	"regexp"
 	"strings"
+	"time"
 )
 
 var re = regexp.MustCompile("[^a-z0-9]+")
@@ -11,4 +12,9 @@ var re = regexp.MustCompile("[^a-z0-9]+")
 // hyphens.
 func Slugify(s string) string {
 	return strings.Trim(re.ReplaceAllString(strings.ToLower(s), "-"), "-")
+}
+
+// ISO8601 returns an ISO8601 formatted string.
+func ISO8601(t time.Time) string {
+	return t.Format(time.RFC3339)
 }
