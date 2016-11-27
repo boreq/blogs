@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/views"
 	"github.com/boreq/guinea"
@@ -33,5 +34,5 @@ func runServe(c guinea.Context) error {
 
 	router := httprouter.New()
 	views.Register(router)
-	return http.ListenAndServe(":8080", router)
+	return http.ListenAndServe(":8080", context.ClearHandler(router))
 }
