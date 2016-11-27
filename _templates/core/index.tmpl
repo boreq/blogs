@@ -14,7 +14,11 @@
                         <a class="direct-link" href="//{{.GetUrl}}">{{.GetUrl}}</a>
                     </div>
                     <div>
-                            <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
+                        <p>
+                            {{ if .Updated }}
+                                Last post <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
+                            {{end}}
+                        </p>
                     </div>
                 </li>
             {{end}}
