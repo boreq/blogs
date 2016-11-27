@@ -67,7 +67,9 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error
 	if r.Method == "POST" && form.Validate(r.FormValue) {
 		err := auth.CreateUser(usernameField.GetValue(), passwordField.GetValue())
 		if err == nil {
-			// created
+			auth.LoginUser(usernameField.GetValue(), passwordField.GetValue(), w)
+			http.Redirect(w, r, "/", 301)
+			return nil
 		} else {
 			if err == auth.UsernameTakenError {
 				usernameField.AddError("Username is already taken")
@@ -78,18 +80,34 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error
 	}
 
 	// Render
-	var data = make(map[string]interface{})
+	var data = templates.GetDefaultData(r)
 	data["form"] = form
 	return templates.RenderTemplate(w, "auth/register.tmpl", data)
 }
 
 func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
-	form, _, _ := makeLoginForm()
+	form, usernameField, passwordField := makeLoginForm()
 	if r.Method == "POST" && form.Validate(r.FormValue) {
+		err := auth.LoginUser(usernameField.GetValue(), passwordField.GetValue(), w)
+		if err != nil {
+			if err == auth.InvalidUsernameOrPasswordError {
+				form.AddError("Invalid username or password")
+			} else {
+				return err
+			}
+		} else {
+			http.Redirect(w, r, "/", 301)
+			return nil
+		}
 	}
 
 	// Render
-	var data = make(map[string]interface{})
+	var data = templates.GetDefaultData(r)
 	data["form"] = form
 	return templates.RenderTemplate(w, "auth/login.tmpl", data)
+}
+
+func logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	auth.LogoutUser(w, r)
+	http.Redirect(w, r, "/", 301)
 }
