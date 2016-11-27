@@ -1,0 +1,20 @@
+{{ define "form" }}
+    {{ if .Errors }}
+        <div class="alert alert-danger" role="alert">
+            {{ range .Errors }}
+                <p>{{ . }}</p>
+            {{ end }}
+        </div>
+    {{ end }}
+
+    {{range .Fields}}
+        <div class="form-group {{ if not .IsValid }}has-error{{ end }}">
+            <label for="id_{{ .GetName }}">{{ .GetLabel }}</label>
+            {{ .Render }}
+            <span class="help-block">{{ .Errors.AsText }}</span>
+            <span class="help-block">{{ .GetHelpText }}</span>
+        </div>
+    {{ end }}
+
+    <button type="submit" class="btn btn-default">Submit</button>
+{{ end }}

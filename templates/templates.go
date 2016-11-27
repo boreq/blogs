@@ -21,12 +21,24 @@ func Load() error {
 	templatesDir := "_templates/"
 
 	var layouts []string
-	filepath.Walk(templatesDir, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			layouts = append(layouts, path)
-		}
-		return nil
-	})
+	layoutsDir := templatesDir + "templates/"
+	filepath.Walk(layoutsDir,
+		func(path string, info os.FileInfo, err error) error {
+			if !info.IsDir() {
+				layouts = append(layouts, path)
+			}
+			return nil
+		})
+
+	var snippets []string
+	snippetsDir := templatesDir + "snippets/"
+	filepath.Walk(snippetsDir,
+		func(path string, info os.FileInfo, err error) error {
+			if !info.IsDir() {
+				snippets = append(snippets, path)
+			}
+			return nil
+		})
 
 	for _, layout := range layouts {
 		log.Debugf("Loading %s", layout)
@@ -43,10 +55,11 @@ func Load() error {
 			}
 		}
 		files = append(files, layout)
+		files = append(files, snippets...)
 		for _, fname := range files {
 			log.Debugf("    dependency %s", fname)
 		}
-		key := layout[len(templatesDir):]
+		key := layout[len(layoutsDir):]
 		templates[key] = template.Must(template.ParseFiles(files...))
 	}
 	return nil
