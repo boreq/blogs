@@ -11,7 +11,7 @@ var testLoaderCmd = guinea.Command{
 	Run: runTestLoader,
 	Arguments: []guinea.Argument{
 		{"config", false, "Config file"},
-		{"id", false, "Id of the loader"},
+		{"id", false, "ID of the loader"},
 	},
 	ShortDescription: "tests a loader without altering the database",
 }

@@ -14,7 +14,7 @@ var updateCmd = guinea.Command{
 		guinea.Option{
 			Name:        "id",
 			Type:        guinea.Int,
-			Description: "Id of the blog to update, updates all if not present",
+			Description: "ID of the blog to update, updates all if not present",
 			Default:     -1,
 		},
 	},
