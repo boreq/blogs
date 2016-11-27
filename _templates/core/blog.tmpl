@@ -16,7 +16,9 @@
                 <ul class="categories">
                     {{range .categories}}
                         <li>
-                            <div class="title">{{.Name}}</div>
+                            <div class="title">
+                                {{if .Name}}{{.Name}}{{else}}Default category{{end}}
+                            </div>
                         </li>
                     {{end}}
                 </ul>
@@ -44,9 +46,10 @@
                                 </ul>
                             </div>
                             <div>
-                                <time class="timeago" datetime="{{.Date}}">{{.Date}}</time>
+                                <p><time class="timeago" datetime="{{.GetISO8601Date}}">{{.Date}}</time></p>
                                 <p class="category">{{.GetCategory.Name}}</p>
                             </div>
+                            <p>{{.Summary}}</p>
                         </article>
                     {{end}}
                 </div>
