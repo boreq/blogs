@@ -39,8 +39,9 @@ type Post struct {
 	ID         uint `gorm:"primary_key"`
 	CategoryID uint
 
-	InternalID string `gorm:"not null"`
-	Title      string `gorm:"not null"`
+	InternalID string `gorm:"not null;size:1000;"`
+	Title      string `gorm:"not null;size:1000;"`
+	Summary    string `gorm:"not null;size:3000;"`
 	Date       time.Time
 	Tags       []Tag `gorm:"many2many:post_tags;"`
 }
@@ -61,6 +62,10 @@ func (post *Post) GetCategory() *Category {
 	category := &Category{}
 	DB.Model(&post).Related(category)
 	return category
+}
+
+func (post Post) GetISO8601Date() string {
+	return post.Date.Format(time.RFC3339)
 }
 
 type Tag struct {
