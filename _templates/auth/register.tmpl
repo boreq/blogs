@@ -1,0 +1,28 @@
+{{ define "title"}}Sign up{{ end }}
+
+{{ define "content" }}
+    <div class="container">
+        <form method="POST" action="">
+
+            {{ if .form.Errors }}
+                <div class="alert alert-danger" role="alert">
+                    {{ range .form.Errors }}
+                        <p>{{ . }}</p>
+                    {{ end }}
+                </div>
+            {{ end }}
+
+            {{range .form.Fields}}
+                <div class="form-group {{ if not .IsValid }}has-error{{ end }}">
+                    <label for="id_{{ .GetName }}">{{ .GetLabel }}</label>
+                    {{ .Render }}
+                    <span class="help-block">{{ .Errors.AsText }}</span>
+                    <span class="help-block">{{ .GetHelpText }}</span>
+                </div>
+            {{ end }}
+
+            <button type="submit" class="btn btn-default">Submit</button>
+
+        </form>
+    </div>
+{{ end }}
