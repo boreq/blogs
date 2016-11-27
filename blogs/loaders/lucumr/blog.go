@@ -78,7 +78,7 @@ func pageWorker(url string, postChan chan<- loaders.Post, errorChan chan<- error
 
 		if isPaginationNextLink(node) {
 			if href, err := htmlutils.GetAttrVal(node.Parent, "href"); err == nil {
-				href = homeURL + "/" + strings.TrimLeft(href, "/")
+				href = homeURL + strings.TrimLeft(href, "/")
 				startPageWorker(href, postChan, errorChan, wg)
 			}
 		}

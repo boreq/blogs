@@ -115,6 +115,10 @@ func (u *blogUpdater) handlePost(loadedPost loaders.Post) {
 		post.Title = loadedPost.Title
 		altered = true
 	}
+	if post.Summary != loadedPost.Summary {
+		post.Summary = loadedPost.Summary
+		altered = true
+	}
 	category := u.getOrCreateCategory(loadedPost.Category)
 	if post.CategoryID != category.ID {
 		post.CategoryID = category.ID
