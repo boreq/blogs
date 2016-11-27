@@ -5,8 +5,12 @@ import (
 	"github.com/boreq/blogs/database"
 )
 
+func configInit(configFilename string) error {
+	return config.Load(configFilename)
+}
+
 func coreInit(configFilename string) error {
-	if err := config.Load(configFilename); err != nil {
+	if err := configInit(configFilename); err != nil {
 		return err
 	}
 	if err := database.Init(database.SQLite3, config.Config.DatabaseURI); err != nil {

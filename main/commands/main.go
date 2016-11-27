@@ -21,6 +21,7 @@ var MainCmd = guinea.Command{
 		"update":           &updateCmd,
 		"drop_database":    &dropDbCmd,
 		"migrate_database": &migrateDbCmd,
+		"test_loader":      &testLoaderCmd,
 	},
 	ShortDescription: "a blog aggregation platform",
 	Description: `Main command decription.
