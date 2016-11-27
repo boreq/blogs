@@ -20,7 +20,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
 
-    <body id="">
+    <body id="{{ template "body_id" . }}">
         <div id="site">
             <nav class="navbar">
                 <div class="container">
@@ -45,10 +45,10 @@
                         <div class="navbar-right">
 
                                 <ul class="nav navbar-nav">
-                                    <li>
+                                    <li id="nav-register">
                                         <a class="navbar-link" href="/signup">Sign up</a>
                                     </li>
-                                    <li>
+                                    <li id="nav-login">
                                         <a class="navbar-link" href="/signin">Sign in</a>
                                     </li>
                                 </ul>
@@ -71,3 +71,4 @@
 </html>
 {{ end }}
 {{ define "title" }}{{ end }}
+{{ define "body_id" }}{{ end }}

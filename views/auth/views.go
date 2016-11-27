@@ -1,13 +1,14 @@
 package auth
 
 import (
+	"github.com/boreq/blogs/auth"
 	"github.com/boreq/blogs/forms"
 	"github.com/boreq/blogs/templates"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-func makeRegisterForm() forms.Form {
+func makeUsernameAndPasswordFields() (*forms.TextField, *forms.TextField) {
 	usernameField := &forms.TextField{
 		Name:     "username",
 		Label:    "Username:",
@@ -30,6 +31,12 @@ func makeRegisterForm() forms.Form {
 	})
 	passwordField.SetAttribute("class", "form-control")
 
+	return usernameField, passwordField
+}
+
+func makeRegisterForm() (forms.Form, forms.Field, forms.Field) {
+	usernameField, passwordField := makeUsernameAndPasswordFields()
+
 	passwordConfirmField := forms.ToPasswordField(&forms.TextField{
 		Name:     "password_confirm",
 		Label:    "Confirm password:",
@@ -42,13 +49,31 @@ func makeRegisterForm() forms.Form {
 	form.AddField(passwordField)
 	form.AddField(passwordConfirmField)
 	form.AddValidator(forms.FieldsEqual(passwordField, passwordConfirmField))
-	return form
+	return form, usernameField, passwordField
+}
+
+func makeLoginForm() (forms.Form, forms.Field, forms.Field) {
+	usernameField, passwordField := makeUsernameAndPasswordFields()
+	usernameField.HelpText = ""
+	passwordField.HelpText = ""
+	form := forms.Form{}
+	form.AddField(usernameField)
+	form.AddField(passwordField)
+	return form, usernameField, passwordField
 }
 
 func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
-	form := makeRegisterForm()
-	if r.Method == "POST" {
-		if form.Validate(r.FormValue) {
+	form, usernameField, passwordField := makeRegisterForm()
+	if r.Method == "POST" && form.Validate(r.FormValue) {
+		err := auth.CreateUser(usernameField.GetValue(), passwordField.GetValue())
+		if err == nil {
+			// created
+		} else {
+			if err == auth.UsernameTakenError {
+				usernameField.AddError("Username is already taken")
+			} else {
+				return err
+			}
 		}
 	}
 
@@ -56,4 +81,15 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error
 	var data = make(map[string]interface{})
 	data["form"] = form
 	return templates.RenderTemplate(w, "auth/register.tmpl", data)
+}
+
+func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
+	form, _, _ := makeLoginForm()
+	if r.Method == "POST" && form.Validate(r.FormValue) {
+	}
+
+	// Render
+	var data = make(map[string]interface{})
+	data["form"] = form
+	return templates.RenderTemplate(w, "auth/login.tmpl", data)
 }
