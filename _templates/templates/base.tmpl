@@ -43,7 +43,23 @@
                         </div>
 
                         <div class="navbar-right">
-
+                            {{ if .user.IsAuthenticated }}
+                                <ul class="nav navbar-nav navbar-right">
+                                    <li class="dropdown">
+                                        <a aria-expanded="true" aria-haspopup="true" role="button" data-toggle="dropdown" class="dropdown-toggle" id="user-drop">
+                                            <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                            {{ .user.GetUser.Username }}
+                                            <span class="caret"></span>
+                                        </a>
+                                        <ul aria-labelledby="user-drop" class="dropdown-menu">
+                                            <li><a href="">Your profile</li>
+                                            <li class="divider" role="separator"></li>
+                                            <li><a href="">Settings</a></li>
+                                            <li><a href="/signout">Sign out</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            {{ else }}
                                 <ul class="nav navbar-nav">
                                     <li id="nav-register">
                                         <a class="navbar-link" href="/signup">Sign up</a>
@@ -52,7 +68,7 @@
                                         <a class="navbar-link" href="/signin">Sign in</a>
                                     </li>
                                 </ul>
-
+                            {{ end }}
                         </div>
 
                     </div>
