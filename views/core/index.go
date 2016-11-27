@@ -43,7 +43,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
 		blogData := BlogData{blog.Blog, blog.GetUpdated()}
 		blogsData = append(blogsData, blogData)
 	}
-	var data = make(map[string]interface{})
+	var data = templates.GetDefaultData(r)
 	data["blogs"] = blogsData
 	return templates.RenderTemplate(w, "core/index.tmpl", data)
 }

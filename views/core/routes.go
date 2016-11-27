@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/boreq/blogs/utils/http"
+	"github.com/boreq/blogs/http"
 	"github.com/julienschmidt/httprouter"
 )
 

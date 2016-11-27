@@ -45,7 +45,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
 		Scan(&tags)
 
 	// Render
-	var data = make(map[string]interface{})
+	var data = templates.GetDefaultData(r)
 	data["blog"] = blog
 	data["categories"] = categories
 	data["posts"] = posts
