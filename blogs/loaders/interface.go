@@ -28,5 +28,6 @@ type Post struct {
 	Date     time.Time
 	Category string
 	Title    string
+	Summary  string
 	Tags     []string
 }
