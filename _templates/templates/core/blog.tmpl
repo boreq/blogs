@@ -40,14 +40,14 @@
                                     <a href="//{{.GetUrl}}">{{.Title}}</a>
                                 </h1>
                                 <ul class="tags">
-                                    {{range .Tags}}
+                                    {{range .GetTags}}
                                         <li>#{{.Name}}</li>
                                     {{end}}
                                 </ul>
                             </div>
                             <div>
                                 <p><time class="timeago" datetime="{{.GetISO8601Date}}">{{.Date}}</time></p>
-                                <p class="category">{{.GetCategory.Name}}</p>
+                                <p class="category">{{.CategoryName}}</p>
                             </div>
                             <p>{{.Summary}}</p>
                         </article>

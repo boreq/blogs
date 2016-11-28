@@ -68,7 +68,7 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error
 		err := auth.CreateUser(usernameField.GetValue(), passwordField.GetValue())
 		if err == nil {
 			auth.LoginUser(usernameField.GetValue(), passwordField.GetValue(), w)
-			http.Redirect(w, r, "/", 301)
+			http.Redirect(w, r, "/", 302)
 			return nil
 		} else {
 			if err == auth.UsernameTakenError {
@@ -96,7 +96,7 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
 				return err
 			}
 		} else {
-			http.Redirect(w, r, "/", 301)
+			http.Redirect(w, r, "/", 302)
 			return nil
 		}
 	}
@@ -109,5 +109,5 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
 
 func logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	auth.LogoutUser(w, r)
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/", 302)
 }

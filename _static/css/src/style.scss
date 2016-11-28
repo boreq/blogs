@@ -32,12 +32,13 @@ html, body {
 /* --- Nav --- */
 
 #body-index #nav-index .navbar-link,
+#body-blogs #nav-blogs .navbar-link,
 #body-login #nav-login .navbar-link,
 #body-register #nav-register .navbar-link {
     border-bottom: 3px solid $primary-color;
 }
 
-/* --- Index --- */
+/* --- Blogs --- */
 .blogs {
     list-style-type: none;
     margin: 0;
@@ -54,6 +55,10 @@ html, body {
 
             >* {
                 flex: 1 1 auto;
+            }
+
+            h1 {
+                font-size: 25px;
             }
 
             .direct-link {

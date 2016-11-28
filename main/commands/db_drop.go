@@ -10,7 +10,7 @@ var dropDbCmd = guinea.Command{
 	Arguments: []guinea.Argument{
 		{"config", false, "Config file"},
 	},
-	ShortDescription: "drops all database tables used by this program",
+	ShortDescription: "drops database tables",
 }
 
 func runDropDb(c guinea.Context) error {

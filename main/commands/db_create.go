@@ -5,17 +5,17 @@ import (
 	"github.com/boreq/guinea"
 )
 
-var migrateDbCmd = guinea.Command{
-	Run: runMigrateDb,
+var createDbCmd = guinea.Command{
+	Run: runCreateDb,
 	Arguments: []guinea.Argument{
 		{"config", false, "Config file"},
 	},
-	ShortDescription: "creates missing tables and columns in the database",
+	ShortDescription: "creates database tables",
 }
 
-func runMigrateDb(c guinea.Context) error {
+func runCreateDb(c guinea.Context) error {
 	if err := coreInit(c.Arguments[0]); err != nil {
 		return err
 	}
-	return database.MigrateTables()
+	return database.CreateTables()
 }

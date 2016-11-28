@@ -1,12 +1,42 @@
 package core
 
 import (
+	blgs "github.com/boreq/blogs/blogs"
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/templates"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 )
+
+type postResult struct {
+	database.Post
+	CategoryName   string
+	BlogInternalID uint
+}
+
+func (p postResult) GetUrl() string {
+	loader, ok := blgs.Blogs[p.BlogInternalID]
+	if ok {
+		return loader.GetPostUrl(p.Post.InternalID)
+	}
+	return ""
+}
+
+func (p postResult) GetTags() []database.Tag {
+	var tags []database.Tag
+	err := database.DB.Select(&tags,
+		`SELECT tag.*
+		FROM tag
+		JOIN post_to_tag ON post_to_tag.tag_id = tag.id
+		JOIN post ON post.id = post_to_tag.post_id
+		WHERE post.id=$1
+		ORDER BY tag.name DESC`, p.Post.ID)
+	if err != nil {
+		panic(err)
+	}
+	return tags
+}
 
 type TagResult struct {
 	database.Tag
@@ -20,29 +50,47 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
 		return err
 	}
 
-	var blog = &database.Blog{}
-	database.DB.Where(&database.Blog{ID: uint(id)}).First(&blog)
+	var blog database.Blog
+	err = database.DB.Get(&blog, "SELECT * FROM blog WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
 
-	var categories = make([]database.Category, 0)
-	database.DB.Model(&blog).Related(&categories)
+	var categories []database.Category
+	err = database.DB.Select(&categories,
+		`SELECT category.*
+		FROM category
+		JOIN blog ON blog.id=category.blog_id
+		WHERE blog.id=$1`, id)
+	if err != nil {
+		return err
+	}
 
-	var posts = make([]database.Post, 0)
-	database.DB.
-		Order("posts.date desc").
-		Joins("JOIN categories ON categories.id = posts.category_id JOIN blogs ON blogs.id = categories.blog_id").
-		Where("blogs.id = ?", id).
-		Preload("Tags").
-		Find(&posts)
+	var posts []postResult
+	err = database.DB.Select(&posts,
+		`SELECT post.*, category.name as category_name, blog.internal_id AS blog_internal_id FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		WHERE blog.id=$1
+		ORDER BY post.date DESC`, id)
+	if err != nil {
+		return err
+	}
 
-	var tags = make([]TagResult, 0)
-	database.DB.
-		Table("tags").
-		Order("count desc").
-		Select("tags.name, COUNT(tags.name) as count").
-		Joins("JOIN post_tags ON post_tags.tag_id = tags.id JOIN posts ON posts.id = post_tags.post_id JOIN categories ON categories.id = posts.category_id JOIN blogs ON blogs.id = categories.blog_id").
-		Where("blogs.id = ?", id).
-		Group("tags.name").
-		Scan(&tags)
+	var tags []TagResult
+	err = database.DB.Select(&tags,
+		`SELECT tag.*, COUNT(tag.id) as count
+		FROM tag
+		JOIN post_to_tag ON post_to_tag.tag_id = tag.id
+		JOIN post ON post.id = post_to_tag.post_id
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		WHERE blog.id=$1
+		GROUP BY tag.id
+		ORDER BY count DESC`, id)
+	if err != nil {
+		return err
+	}
 
 	// Render
 	var data = templates.GetDefaultData(r)

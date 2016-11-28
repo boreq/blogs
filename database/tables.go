@@ -1,91 +1,98 @@
 package database
 
-import (
-	"fmt"
-	"github.com/boreq/blogs/blogs"
-	"github.com/boreq/blogs/utils"
-	"github.com/jinzhu/gorm"
-	"time"
+var createUserSQL = `
+CREATE TABLE "user" (
+	id INTEGER PRIMARY KEY,
+
+	username VARCHAR(1000) NOT NULL,
+	password VARCHAR(1000) NOT NULL,
+
+	UNIQUE(username)
 )
+`
+var createUserSessionSQL = `
+CREATE TABLE "user_session" (
+	id INTEGER PRIMARY KEY,
+	user_id INTEGER NOT NULL,
 
-type User struct {
-	gorm.Model
+	key VARCHAR(1000) NOT NULL,
+	last_seen DATETIME NOT NULL,
 
-	Username string `gorm:"size:255"`
-	Password string `gorm:"size:255"`
-	Sessions []UserSession
-}
+	FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	UNIQUE(key)
+)
+`
 
-type UserSession struct {
-	gorm.Model
-	UserID uint `gorm:"not null"`
+var createBlogSQL = `
+CREATE TABLE "blog" (
+	id INTEGER PRIMARY KEY,
 
-	SessionKey string `gorm:"size:512"`
-	LastSeen   time.Time
-}
+	internal_id INTEGER NOT NULL,
+	title VARCHAR(1000) NOT NULL,
 
-type Blog struct {
-	ID uint `gorm:"primary_key"`
+	UNIQUE(internal_id)
+)
+`
 
-	InternalID uint   `gorm:"not null"`
-	Title      string `gorm:"not null"`
-	Categories []Category
-}
+var createCategorySQL = `
+CREATE TABLE "category" (
+	id INTEGER PRIMARY KEY,
+	blog_id INTEGER NOT NULL,
 
-func (blog *Blog) GetUrl() string {
-	loader, ok := blogs.Blogs[blog.InternalID]
-	if ok {
-		return loader.GetUrl()
-	}
-	return ""
-}
+	name VARCHAR(1000) NOT NULL,
 
-func (blog *Blog) GetAbsoluteUrl() string {
-	return fmt.Sprintf("/blog/%d/%s", blog.ID, utils.Slugify(blog.Title))
-}
+	FOREIGN KEY(blog_id) REFERENCES blog(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	UNIQUE(blog_id, name)
+)
+`
 
-type Category struct {
-	ID     uint `gorm:"primary_key"`
-	BlogID uint
+var createPostSQL = `
+CREATE TABLE "post" (
+	id INTEGER PRIMARY KEY,
+	category_id INTEGER NOT NULL,
 
-	Name  string `gorm:"not null"`
-	Posts []Post
-}
+	internal_id VARCHAR(1000) NOT NULL,
+	title VARCHAR(1000) NOT NULL,
+	summary VARCHAR(3000) NOT NULL,
+	date DATETIME NOT NULL,
 
-type Post struct {
-	ID         uint `gorm:"primary_key"`
-	CategoryID uint
+	FOREIGN KEY(category_id) REFERENCES category(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	UNIQUE(category_id, internal_id)
+)
+`
 
-	InternalID string `gorm:"not null;size:1000;"`
-	Title      string `gorm:"not null;size:1000;"`
-	Summary    string `gorm:"not null;size:3000;"`
-	Date       time.Time
-	Tags       []Tag `gorm:"many2many:post_tags;"`
-}
+var createTagSQL = `
+CREATE TABLE "tag" (
+	id INTEGER PRIMARY KEY,
 
-func (post Post) GetUrl() string {
-	category := &Category{}
-	blog := &Blog{}
-	DB.Model(post).Related(&category)
-	DB.Model(category).Related(&blog)
-	loader, ok := blogs.Blogs[blog.InternalID]
-	if ok {
-		return loader.GetPostUrl(post.InternalID)
-	}
-	return ""
-}
+	name VARCHAR(1000) NOT NULL,
 
-func (post *Post) GetCategory() *Category {
-	category := &Category{}
-	DB.Model(&post).Related(category)
-	return category
-}
+	UNIQUE(name)
+)
+`
 
-func (post Post) GetISO8601Date() string {
-	return post.Date.Format(time.RFC3339)
-}
+var createPostToTagSQL = `
+CREATE TABLE "post_to_tag" (
+	id INTEGER PRIMARY KEY,
+	post_id INTEGER NOT NULL,
+	tag_id INTEGER NOT NULL,
 
-type Tag struct {
-	ID   uint   `gorm:"primary_key"`
-	Name string `gorm:"not null"`
-}
+	FOREIGN KEY(post_id) REFERENCES post(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY(tag_id) REFERENCES tag(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	UNIQUE(post_id, tag_id)
+)
+`
+
+var createUpdateSQL = `
+CREATE TABLE "update" (
+	id INTEGER PRIMARY KEY,
+	blog_id INTEGER NOT NULL,
+
+	started DATETIME NOT NULL,
+	ended DATETIME NOT NULL,
+	succeeded BOOLEAN NOT NULL,
+	data TEXT,
+
+	FOREIGN KEY(blog_id) REFERENCES blog(id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+`

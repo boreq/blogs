@@ -17,12 +17,12 @@ var MainCmd = guinea.Command{
 		return guinea.ErrInvalidParms
 	},
 	Subcommands: map[string]*guinea.Command{
-		"serve":            &serveCmd,
-		"update":           &updateCmd,
-		"drop_database":    &dropDbCmd,
-		"migrate_database": &migrateDbCmd,
-		"test_loader":      &testLoaderCmd,
-		"list_loaders":     &listLoadersCmd,
+		"serve":         &serveCmd,
+		"update":        &updateCmd,
+		"create_tables": &createDbCmd,
+		"drop_tables":   &dropDbCmd,
+		"test_loader":   &testLoaderCmd,
+		"list_loaders":  &listLoadersCmd,
 	},
 	ShortDescription: "a blog aggregation platform",
 	Description: `Main command decription.

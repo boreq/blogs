@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/utils"
@@ -9,41 +10,49 @@ import (
 	"time"
 )
 
+type scannableTime struct {
+	time.Time
+}
+
+func (t *scannableTime) Scan(src interface{}) error {
+	updated, ok := src.([]uint8)
+	if !ok {
+		return errors.New("Invalid type, this is not []uint8")
+	}
+	tmp, err := time.Parse("2006-01-02 15:04:05-07:00", string(updated))
+	if err != nil {
+		return err
+	}
+	t.Time = tmp
+	return nil
+}
+
+func (t scannableTime) String() string {
+	return utils.ISO8601(t.Time)
+}
+
 type BlogResult struct {
 	database.Blog
-	Updated []uint8
-}
-
-func (br BlogResult) GetUpdated() string {
-	t, err := time.Parse("2006-01-02 15:04:05-07:00", string(br.Updated))
-	if err != nil {
-		return ""
-	}
-	return utils.ISO8601(t)
-}
-
-type BlogData struct {
-	database.Blog
-	Updated string
+	Updated scannableTime
 }
 
 func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
 	// Get the data
 	var blogs = make([]BlogResult, 0)
-	database.DB.
-		Table("blogs").
-		Order("blogs.title").
-		Select("blogs.id, blogs.internal_id, blogs.title, MAX(posts.date) AS updated").Joins("JOIN categories ON categories.blog_id = blogs.id JOIN posts ON posts.category_id = categories.id").
-		Group("blogs.id").
-		Scan(&blogs)
-
-	// Render
-	var blogsData = make([]BlogData, 0, len(blogs))
-	for _, blog := range blogs {
-		blogData := BlogData{blog.Blog, blog.GetUpdated()}
-		blogsData = append(blogsData, blogData)
+	err := database.DB.
+		Select(&blogs, `
+		SELECT blog.*, MAX(post.date) AS updated
+		FROM blog
+		JOIN category ON category.blog_id = blog.id
+		JOIN post ON post.category_id = category.id
+		GROUP BY blog.id
+		ORDER BY blog.title
+		`)
+	if err != nil {
+		return err
 	}
+
 	var data = templates.GetDefaultData(r)
-	data["blogs"] = blogsData
+	data["blogs"] = blogs
 	return templates.RenderTemplate(w, "core/blogs.tmpl", data)
 }
