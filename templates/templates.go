@@ -15,32 +15,17 @@ import (
 var log = logging.GetLogger("templates")
 var templates map[string]*template.Template
 
-func Load() error {
+func Load(templatesDir string) error {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
 
-	templatesDir := "_templates/"
-
-	var layouts []string
-	layoutsDir := templatesDir + "templates/"
-	filepath.Walk(layoutsDir,
-		func(path string, info os.FileInfo, err error) error {
-			if !info.IsDir() {
-				layouts = append(layouts, path)
-			}
-			return nil
-		})
-
-	var snippets []string
-	snippetsDir := templatesDir + "snippets/"
-	filepath.Walk(snippetsDir,
-		func(path string, info os.FileInfo, err error) error {
-			if !info.IsDir() {
-				snippets = append(snippets, path)
-			}
-			return nil
-		})
+	// TODO TRIM RIGHT SLASH
+	templatesDir = strings.TrimRight(templatesDir, string(os.PathSeparator))
+	layoutsDir := templatesDir + "/templates/"
+	snippetsDir := templatesDir + "/snippets/"
+	var layouts = findFiles(layoutsDir)
+	var snippets = findFiles(snippetsDir)
 
 	for _, layout := range layouts {
 		log.Debugf("Loading %s", layout)
@@ -65,6 +50,18 @@ func Load() error {
 		templates[key] = template.Must(template.ParseFiles(files...))
 	}
 	return nil
+}
+
+func findFiles(directory string) []string {
+	var rv []string
+	filepath.Walk(directory,
+		func(path string, info os.FileInfo, err error) error {
+			if !info.IsDir() {
+				rv = append(rv, path)
+			}
+			return nil
+		})
+	return rv
 }
 
 func GetDefaultData(r *http.Request) map[string]interface{} {

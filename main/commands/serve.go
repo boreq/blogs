@@ -21,7 +21,7 @@ func initServe(configFilename string) error {
 	if err := coreInit(configFilename); err != nil {
 		return err
 	}
-	if err := templates.Load(); err != nil {
+	if err := templates.Load("_templates/"); err != nil {
 		return err
 	}
 	return nil
