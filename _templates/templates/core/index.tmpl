@@ -1,27 +1,8 @@
-{{ define "title"}}Index Page{{ end }}
+{{ define "title"}}Index{{ end }}
+{{ define "body_id"}}body-index{{ end }}
 
 {{ define "content" }}
     <div class="container">
-        <ul class="blogs">
-            {{range .blogs}}
-                <li>
-                    <div>
-                        <a class="title" href="{{.GetAbsoluteUrl}}">
-                            <h1>
-                                {{.Title}}
-                            </h1>
-                        </a>
-                        <a class="direct-link" href="//{{.GetUrl}}">{{.GetUrl}}</a>
-                    </div>
-                    <div>
-                        <p>
-                            {{ if .Updated }}
-                                Last post <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
-                            {{end}}
-                        </p>
-                    </div>
-                </li>
-            {{end}}
-        </ul>
+        Hello!
     </div>
 {{ end }}

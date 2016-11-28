@@ -1,0 +1,34 @@
+{{ define "title"}}Blogs{{ end }}
+{{ define "body_id"}}body-blogs{{ end }}
+
+{{ define "content" }}
+    <div class="container">
+        {{ if .blogs }}
+            <ul class="blogs">
+                {{range .blogs}}
+                    <li>{{ template "blog" . }}</li>
+                {{end}}
+            </ul>
+        {{ else }}
+            <p>There are no blogs in the database! Is this a new deployment?</p>
+        {{ end }}
+    </div>
+{{ end }}
+
+{{ define "blog" }}
+    <div>
+        <a class="title" href="{{.GetAbsoluteUrl}}">
+            <h1>
+                {{.Title}}
+            </h1>
+        </a>
+        <a class="direct-link" href="//{{.GetUrl}}">{{.GetUrl}}</a>
+    </div>
+    <div>
+        <p>
+            {{ if .Updated }}
+                Last post <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
+            {{end}}
+        </p>
+    </div>
+{{ end }}
