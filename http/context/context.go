@@ -16,20 +16,29 @@ type Context struct {
 	User auth.User
 }
 
-func createContext(r *http.Request) *Context {
-	ctx := &Context{
-		User: auth.GetUser(r),
+func createContext(r *http.Request) (*Context, error) {
+	user, err := auth.GetUser(r)
+	if err != nil {
+		return nil, err
 	}
-	return ctx
+
+	ctx := &Context{
+		User: user,
+	}
+	return ctx, nil
 }
 
-// Get returns the context associated with a given request.
+// Get returns the context associated with a given request. This function will
+// panic if the context can't be retrieved.
 func Get(r *http.Request) *Context {
 	mutex.Lock()
 	defer mutex.Unlock()
 	ctx, ok := contexts[r]
 	if !ok {
-		ctx = createContext(r)
+		ctx, err := createContext(r)
+		if err != nil {
+			panic(err)
+		}
 		contexts[r] = ctx
 	}
 	return ctx

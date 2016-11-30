@@ -1,3 +1,4 @@
+// Package auth handles user authentication.
 package auth
 
 import (
@@ -56,32 +57,38 @@ func (u anonymousUser) GetUser() *database.User {
 }
 
 // GetUser returns the current user.
-func GetUser(r *http.Request) User {
+func GetUser(r *http.Request) (User, error) {
 	// Get the session
 	session := getUserSession(r)
 	if session == nil {
-		log.Debug("GetUser: no user session")
-		return &anonymousUser{}
+		return &anonymousUser{}, nil
 	}
 
 	// Update LastSeen
 	session.LastSeen = time.Now()
-	database.DB.MustExec(
+	if _, err := database.DB.Exec(
 		"UPDATE user_session SET last_seen=$1 WHERE id=$2",
-		session.LastSeen, session.ID)
+		session.LastSeen, session.ID); err != nil {
+		return nil, err
+	}
 
-	return &authenticatedUser{session.User}
+	return &authenticatedUser{session.User}, nil
 }
 
 // LogoutUser logs out the current user. It is safe to call this function if
 // a user is not logged in.
-func LogoutUser(w http.ResponseWriter, r *http.Request) {
+func LogoutUser(w http.ResponseWriter, r *http.Request) error {
 	session := getUserSession(r)
 	if session != nil {
-		database.DB.MustExec("DELETE FROM user_session WHERE id=$1", session.ID)
+		if _, err := database.DB.Exec(
+			"DELETE FROM user_session WHERE id=$1",
+			session.ID); err != nil {
+			return err
+		}
 	}
 	cookie := &http.Cookie{Name: sessionKeyCookieName, MaxAge: -1}
 	http.SetCookie(w, cookie)
+	return nil
 }
 
 // LoginUser logs in a user. InvalidUsernameOrPasswordError is returned if the
