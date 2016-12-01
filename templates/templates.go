@@ -1,10 +1,12 @@
 package templates
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
 	"html/template"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,12 +17,13 @@ import (
 var log = logging.GetLogger("templates")
 var templates map[string]*template.Template
 
+// Load should be called before rendering templates using functions contained
+// in this package.
 func Load(templatesDir string) error {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
 
-	// TODO TRIM RIGHT SLASH
 	templatesDir = strings.TrimRight(templatesDir, string(os.PathSeparator))
 	layoutsDir := templatesDir + "/templates/"
 	snippetsDir := templatesDir + "/snippets/"
@@ -64,6 +67,10 @@ func findFiles(directory string) []string {
 	return rv
 }
 
+// GetDefaultData returns the base data which can be extended with new keys
+// and passed to the RenderTemplate or RenderTemplateSafe functions. It is
+// advised to use this function to get the initial map instead of creating it
+// directly.
 func GetDefaultData(r *http.Request) map[string]interface{} {
 	var data = make(map[string]interface{})
 	var ctx = context.Get(r)
@@ -72,13 +79,46 @@ func GetDefaultData(r *http.Request) map[string]interface{} {
 	return data
 }
 
-// renderTemplate is a wrapper around template.ExecuteTemplate.
-func RenderTemplate(w http.ResponseWriter, name string, data map[string]interface{}) error {
+func getTemplate(name string) (*template.Template, error) {
 	tmpl, ok := templates[name]
 	if !ok {
-		return fmt.Errorf("The template %s does not exist.", name)
+		return nil, fmt.Errorf("The template %s does not exist.", name)
+	}
+	return tmpl, nil
+}
+
+func setContentTypeHeader(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+}
+
+// RenderTemplate is a wrapper around template.ExecuteTemplate. If an error
+// occurs in this function partial results may be written to the output writer.
+func RenderTemplate(w http.ResponseWriter, name string, data map[string]interface{}) error {
+	tmpl, err := getTemplate(name)
+	if err != nil {
+		return err
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	setContentTypeHeader(w)
 	return tmpl.ExecuteTemplate(w, "base", data)
+}
+
+// RenderTemplateSafe is a wrapper around template.ExecuteTemplate. If an error
+// occurs this function will attempt to ensure that no data will written to
+// the output writer.
+func RenderTemplateSafe(w http.ResponseWriter, name string, data map[string]interface{}) error {
+	tmpl, err := getTemplate(name)
+	if err != nil {
+		return err
+	}
+
+	buf := &bytes.Buffer{}
+	err = tmpl.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		return err
+	}
+
+	setContentTypeHeader(w)
+	_, err = buf.WriteTo(w)
+	return err
 }
