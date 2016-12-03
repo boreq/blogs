@@ -8,10 +8,10 @@ import (
 
 type Pagination struct {
 	// Page is the current page number.
-	Page uint
+	Page int
 
 	// AllPages is the number of all pages/last page.
-	AllPages uint
+	AllPages int
 
 	// HasNext is true if there is a next page.
 	HasNext bool
@@ -20,17 +20,17 @@ type Pagination struct {
 	HasPrevious bool
 
 	// Offset can be used as a parameter in a SQL query.
-	Offset uint
+	Offset int
 
 	// Limit can be used as a parameter in a SQL query.
-	Limit uint
+	Limit int
 }
 
 // NewPagination uses the "page" query parameter to get the page number and
 // initialize the struct.
 func NewPagination(r *http.Request, allItems uint, itemsPerPage uint) Pagination {
 	page := getPageNumber(r)
-	allPages := uint(math.Ceil(float64(allItems) / float64(itemsPerPage)))
+	allPages := int(math.Ceil(float64(allItems) / float64(itemsPerPage)))
 	if page > allPages {
 		page = allPages
 	}
@@ -39,18 +39,18 @@ func NewPagination(r *http.Request, allItems uint, itemsPerPage uint) Pagination
 		AllPages:    allPages,
 		HasNext:     page < allPages,
 		HasPrevious: page > 1,
-		Offset:      itemsPerPage * (page - 1),
-		Limit:       itemsPerPage,
+		Offset:      int(itemsPerPage) * (page - 1),
+		Limit:       int(itemsPerPage),
 	}
 	return rv
 }
 
-func getPageNumber(r *http.Request) uint {
+func getPageNumber(r *http.Request) int {
 	pageParam, ok := r.URL.Query()["page"]
 	if ok {
-		p, err := strconv.ParseUint(pageParam[0], 10, 32)
+		p, err := strconv.ParseInt(pageParam[0], 10, 32)
 		if err == nil && p >= 1 {
-			return uint(p)
+			return int(p)
 		}
 	}
 	return 1
