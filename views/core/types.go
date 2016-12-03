@@ -63,11 +63,6 @@ type TagResult struct {
 	Count uint
 }
 
-type result struct {
-	postCategoryBlog
-	database.Subscription
-}
-
 type scannableTime struct {
 	time.Time
 }
@@ -92,5 +87,5 @@ func (t scannableTime) String() string {
 type blogResult struct {
 	database.Blog
 	SubscriptionID sql.NullInt64
-	Subscriptions  uint
+	Updated        scannableTime
 }

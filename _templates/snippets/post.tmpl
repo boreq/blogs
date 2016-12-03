@@ -1,0 +1,27 @@
+{{define "post"}}
+    <article>
+        <div>
+            <h1>
+                {{template "star_buttons" dict "request" .context.request "user" .context.user "post_id" .post.Post.ID "starred" .post.Starred.Valid}}
+                <a href="//{{.post.GetPostUrl}}">{{.post.Post.Title}}</a>
+            </h1>
+            <ul class="tags">
+                {{range .post.GetPostTags}}
+                    <li>#{{.Name}}</li>
+                {{end}}
+            </ul>
+        </div>
+        <div>
+            <p>
+                {{.post.Post.Stars}} stars,
+                posted <time class="timeago" datetime="{{.post.GetISO8601Date}}">{{.post.Post.Date}}</time>
+                on
+                <a href="{{.post.Blog.GetAbsoluteUrl}}">{{.post.Blog.Title}}</a>
+            </p>
+            <p class="category">{{.post.Category.Name}}</p>
+        </div>
+        {{if .post.Post.Summary}}
+            <p>{{.post.Post.Summary}}</p>
+        {{end}}
+    </article>
+{{end}}

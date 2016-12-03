@@ -14,12 +14,11 @@ import (
 )
 
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var posts []result
+	var posts []postsResult
 
 	ctx := context.Get(r)
 	if ctx.User.IsAuthenticated() {
-		user_id := ctx.User.GetUser().ID
-
+		userId := ctx.User.GetUser().ID
 		var numPosts uint
 		if err := database.DB.Get(&numPosts,
 			`SELECT COUNT(*) AS numPosts
@@ -27,23 +26,22 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			JOIN category ON category.id = post.category_id
 			JOIN blog ON blog.id = category.blog_id
 			JOIN subscription ON blog.id = subscription.blog_id
-			WHERE subscription.user_id=$1`, user_id); err != nil {
+			WHERE subscription.user_id=$1`, userId); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
-
 		p := utils.NewPagination(r, numPosts, 20)
-
 		if err := database.DB.Select(&posts,
-			`SELECT post.*, category.*, blog.*, subscription.*
+			`SELECT post.*, category.*, blog.*, star.id AS starred
 			FROM post
 			JOIN category ON category.id = post.category_id
 			JOIN blog ON blog.id = category.blog_id
 			JOIN subscription ON blog.id = subscription.blog_id
+			LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
 			WHERE subscription.user_id=$1
 			ORDER BY post.date DESC
 			LIMIT $2 OFFSET $3
-			`, user_id, p.Limit, p.Offset); err != nil {
+			`, userId, p.Limit, p.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
@@ -119,10 +117,11 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	var blogs = make([]blogResult, 0)
 	err := database.DB.Select(&blogs, `
-		SELECT blog.*, s1.id AS subscription_id, COUNT(s2.id) AS subscriptions
+		SELECT blog.*, s1.id AS subscription_id, MAX(post.date) AS updated
 		FROM blog
+		JOIN category ON category.blog_id=blog.id
+		JOIN post ON post.category_id=category.id
 		LEFT JOIN subscription s1 ON s1.blog_id=blog.id AND s1.user_id=$1
-		LEFT JOIN subscription s2 ON s2.blog_id=blog.id
 		GROUP BY blog.id
 		ORDER BY blog.title`, user_id)
 	if err != nil {
@@ -248,13 +247,13 @@ func subscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	userId := ctx.User.GetUser().ID
 
 	if _, err := database.DB.Exec(`
-		INSERT INTO subscription(blog_id, user_id)
-		SELECT $1, $2
+		INSERT INTO subscription(blog_id, user_id, date)
+		SELECT $1, $2, $3
 		WHERE NOT EXISTS(
 			SELECT 1
 			FROM subscription
 			WHERE blog_id=$1 AND user_id=$2)`,
-		blog_id, userId); err != nil {
+		blog_id, userId, time.Now().UTC()); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
