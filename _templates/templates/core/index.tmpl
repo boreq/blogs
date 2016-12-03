@@ -3,6 +3,29 @@
 
 {{ define "content" }}
     <div class="container">
-        Hello!
+        <div class="posts">
+            {{ range .posts }}
+                <article>
+                    <div>
+                        <h1>
+                            <a href="//{{ .GetUrl }}">{{ .Post.Title }}</a>
+                        </h1>
+                    </div>
+                    <div>
+                        <p>
+                            <time class="timeago" datetime="{{ .Post.GetISO8601Date }}">{{ .Post.Date }}</time>
+                            on
+                            <a>{{ .Blog.Title }}</a>
+                        </p>
+                        <p class="category">{{ .Category.Name }}</p>
+                    </div>
+                    {{ if .Post.Summary }}
+                        <p>{{ .Post.Summary }}</p>
+                    {{ end }}
+                </article>
+            {{ else }}
+                <p>No posts found, subscribe to more blogs.</p>
+            {{ end }}
+        </div>
     </div>
 {{ end }}
