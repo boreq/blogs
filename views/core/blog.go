@@ -3,6 +3,7 @@ package core
 import (
 	blgs "github.com/boreq/blogs/blogs"
 	"github.com/boreq/blogs/database"
+	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
@@ -64,6 +65,21 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		}
 	}
 
+	var subscription *database.Subscription
+	ctx := context.Get(r)
+	if ctx.User.IsAuthenticated() {
+		user_id := ctx.User.GetUser().ID
+		err = database.DB.Get(subscription,
+			`SELECT * FROM
+			subscription WHERE
+			blog_id=$1 AND user_id=$2
+			LIMIT 1`, id, user_id)
+		if err != nil && err != database.ErrNoRows {
+			errors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	}
+
 	var categories []database.Category
 	err = database.DB.Select(&categories,
 		`SELECT category.*
@@ -107,6 +123,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Render
 	var data = templates.GetDefaultData(r)
 	data["blog"] = blog
+	data["subscription"] = subscription
 	data["categories"] = categories
 	data["posts"] = posts
 	data["tags"] = tags

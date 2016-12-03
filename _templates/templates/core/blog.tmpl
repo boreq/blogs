@@ -12,6 +12,8 @@
                     <p>{{.blog.GetUrl}}</p>
                 </a>
 
+                {{ template "subscribtion_buttons" dict "request" .request "user" .user "blog_id" .blog.ID }}
+
                 <h2>Categories</h2>
                 <ul class="categories">
                     {{range .categories}}
@@ -49,7 +51,9 @@
                                 <p><time class="timeago" datetime="{{.GetISO8601Date}}">{{.Date}}</time></p>
                                 <p class="category">{{.CategoryName}}</p>
                             </div>
-                            <p>{{.Summary}}</p>
+                            {{ if .Summary }}
+                                <p>{{.Summary}}</p>
+                            {{ end }}
                         </article>
                     {{end}}
                 </div>
