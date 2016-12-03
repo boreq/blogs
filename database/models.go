@@ -55,6 +55,7 @@ type Post struct {
 	Title      string
 	Summary    string
 	Date       time.Time
+	Stars      int
 }
 
 func (post Post) GetISO8601Date() string {
@@ -79,4 +80,12 @@ type Subscription struct {
 	ID     uint
 	BlogID uint
 	UserID uint
+	Date   time.Time
+}
+
+type Star struct {
+	ID     uint
+	PostID uint
+	UserID uint
+	Date   time.Time
 }

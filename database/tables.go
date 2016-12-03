@@ -55,6 +55,7 @@ CREATE TABLE "post" (
 	title VARCHAR(1000) NOT NULL,
 	summary VARCHAR(3000) NOT NULL,
 	date DATETIME NOT NULL,
+	stars INT NOT NULL DEFAULT 0,
 
 	FOREIGN KEY(category_id) REFERENCES category(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	UNIQUE(category_id, internal_id)
@@ -102,9 +103,30 @@ CREATE TABLE "subscription" (
 	id INTEGER PRIMARY KEY,
 	blog_id INTEGER NOT NULL,
 	user_id INTEGER NOT NULL,
+	date    DATETIME NOT NULL,
 
 	FOREIGN KEY(blog_id) REFERENCES blog(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	UNIQUE(blog_id, user_id)
 )
+`
+
+var createStarSQL = `
+CREATE TABLE "star" (
+	id INTEGER PRIMARY KEY,
+	post_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
+	date    DATETIME NOT NULL,
+
+	FOREIGN KEY(post_id) REFERENCES post(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	UNIQUE(post_id, user_id)
+)
+`
+
+var createStarTriggerSQL = `
+CREATE TRIGGER update_stars AFTER INSERT ON star 
+BEGIN
+	UPDATE post SET stars=((SELECT stars FROM post WHERE post.id=new.post_id)+1) WHERE post.id=new.post_id;
+END;
 `
