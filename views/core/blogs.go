@@ -5,6 +5,7 @@ import (
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/utils"
+	verrors "github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"time"
@@ -36,23 +37,25 @@ type BlogResult struct {
 	Updated scannableTime
 }
 
-func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
+func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Get the data
 	var blogs = make([]BlogResult, 0)
-	err := database.DB.
-		Select(&blogs, `
+	err := database.DB.Select(&blogs, `
 		SELECT blog.*, MAX(post.date) AS updated
 		FROM blog
 		JOIN category ON category.blog_id = blog.id
 		JOIN post ON post.category_id = category.id
 		GROUP BY blog.id
-		ORDER BY blog.title
-		`)
+		ORDER BY blog.title`)
 	if err != nil {
-		return err
+		verrors.InternalServerError(w, r)
+		return
 	}
 
 	var data = templates.GetDefaultData(r)
 	data["blogs"] = blogs
-	return templates.RenderTemplate(w, "core/blogs.tmpl", data)
+	if err := templates.RenderTemplateSafe(w, "core/blogs.tmpl", data); err != nil {
+		verrors.InternalServerError(w, r)
+		return
+	}
 }

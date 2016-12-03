@@ -4,6 +4,7 @@ import (
 	"github.com/boreq/blogs/auth"
 	"github.com/boreq/blogs/forms"
 	"github.com/boreq/blogs/templates"
+	"github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -62,19 +63,20 @@ func makeLoginForm() (forms.Form, forms.Field, forms.Field) {
 	return form, usernameField, passwordField
 }
 
-func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
+func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	form, usernameField, passwordField := makeRegisterForm()
 	if r.Method == "POST" && form.Validate(r.FormValue) {
 		err := auth.CreateUser(usernameField.GetValue(), passwordField.GetValue())
 		if err == nil {
 			auth.LoginUser(usernameField.GetValue(), passwordField.GetValue(), w)
 			http.Redirect(w, r, "/", 302)
-			return nil
+			return
 		} else {
 			if err == auth.UsernameTakenError {
 				usernameField.AddError("Username is already taken")
 			} else {
-				return err
+				errors.InternalServerError(w, r)
+				return
 			}
 		}
 	}
@@ -82,10 +84,13 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error
 	// Render
 	var data = templates.GetDefaultData(r)
 	data["form"] = form
-	return templates.RenderTemplate(w, "auth/register.tmpl", data)
+	if err := templates.RenderTemplateSafe(w, "auth/register.tmpl", data); err != nil {
+		errors.InternalServerError(w, r)
+		return
+	}
 }
 
-func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
+func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	form, usernameField, passwordField := makeLoginForm()
 	if r.Method == "POST" && form.Validate(r.FormValue) {
 		err := auth.LoginUser(usernameField.GetValue(), passwordField.GetValue(), w)
@@ -93,18 +98,22 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) error {
 			if err == auth.InvalidUsernameOrPasswordError {
 				form.AddError("Invalid username or password")
 			} else {
-				return err
+				errors.InternalServerError(w, r)
+				return
 			}
 		} else {
 			http.Redirect(w, r, "/", 302)
-			return nil
+			return
 		}
 	}
 
 	// Render
 	var data = templates.GetDefaultData(r)
 	data["form"] = form
-	return templates.RenderTemplate(w, "auth/login.tmpl", data)
+	if err := templates.RenderTemplateSafe(w, "auth/login.tmpl", data); err != nil {
+		errors.InternalServerError(w, r)
+		return
+	}
 }
 
 func logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

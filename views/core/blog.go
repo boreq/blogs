@@ -4,6 +4,7 @@ import (
 	blgs "github.com/boreq/blogs/blogs"
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/templates"
+	"github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
@@ -43,17 +44,24 @@ type TagResult struct {
 	Count uint
 }
 
-func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
+func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get the data
 	id, err := strconv.ParseUint(ps.ByName("id"), 10, 32)
 	if err != nil {
-		return err
+		errors.NotFound(w, r)
+		return
 	}
 
 	var blog database.Blog
 	err = database.DB.Get(&blog, "SELECT * FROM blog WHERE id=$1", id)
 	if err != nil {
-		return err
+		if err == database.ErrNoRows {
+			errors.NotFound(w, r)
+			return
+		} else {
+			errors.InternalServerError(w, r)
+			return
+		}
 	}
 
 	var categories []database.Category
@@ -63,7 +71,8 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
 		JOIN blog ON blog.id=category.blog_id
 		WHERE blog.id=$1`, id)
 	if err != nil {
-		return err
+		errors.InternalServerError(w, r)
+		return
 	}
 
 	var posts []postResult
@@ -74,7 +83,8 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
 		WHERE blog.id=$1
 		ORDER BY post.date DESC`, id)
 	if err != nil {
-		return err
+		errors.InternalServerError(w, r)
+		return
 	}
 
 	var tags []TagResult
@@ -89,7 +99,8 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
 		GROUP BY tag.id
 		ORDER BY count DESC`, id)
 	if err != nil {
-		return err
+		errors.InternalServerError(w, r)
+		return
 	}
 
 	// Render
@@ -98,5 +109,8 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) error {
 	data["categories"] = categories
 	data["posts"] = posts
 	data["tags"] = tags
-	return templates.RenderTemplate(w, "core/blog.tmpl", data)
+	if err := templates.RenderTemplate(w, "core/blog.tmpl", data); err != nil {
+		errors.InternalServerError(w, r)
+		return
+	}
 }

@@ -6,9 +6,9 @@ import (
 )
 
 func Register(router *httprouter.Router) {
-	router.GET("/signup", http.NotAuthenticatedOnly(http.WithErrorHandling(register)))
-	router.POST("/signup", http.NotAuthenticatedOnly(http.WithErrorHandling(register)))
-	router.GET("/signin", http.NotAuthenticatedOnly(http.WithErrorHandling(login)))
-	router.POST("/signin", http.NotAuthenticatedOnly(http.WithErrorHandling(login)))
+	router.GET("/signup", http.NotAuthenticatedOnly(register))
+	router.POST("/signup", http.NotAuthenticatedOnly(register))
+	router.GET("/signin", http.NotAuthenticatedOnly(login))
+	router.POST("/signin", http.NotAuthenticatedOnly(login))
 	router.GET("/signout", logout)
 }
