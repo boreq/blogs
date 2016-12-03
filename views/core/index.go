@@ -17,6 +17,11 @@ type result struct {
 	database.Subscription
 }
 
+type postBlog struct {
+	database.Post
+	database.Blog
+}
+
 func (p result) GetUrl() string {
 	loader, ok := blgs.Blogs[p.Blog.InternalID]
 	if ok {
@@ -45,8 +50,20 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 	}
 
+	var newPosts []result
+	if err := database.DB.Select(&newPosts,
+		`SELECT post.*, blog.*
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		ORDER BY post.date DESC LIMIT 5`); err != nil {
+		errors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
 	var data = templates.GetDefaultData(r)
 	data["posts"] = posts
+	data["new_posts"] = newPosts
 	if err := templates.RenderTemplateSafe(w, "core/index.tmpl", data); err != nil {
 		errors.InternalServerError(w, r)
 		return

@@ -3,29 +3,56 @@
 
 {{ define "content" }}
     <div class="container">
-        <div class="posts">
-            {{ range .posts }}
-                <article>
-                    <div>
-                        <h1>
-                            <a href="//{{ .GetUrl }}">{{ .Post.Title }}</a>
-                        </h1>
-                    </div>
-                    <div>
-                        <p>
-                            <time class="timeago" datetime="{{ .Post.GetISO8601Date }}">{{ .Post.Date }}</time>
-                            on
-                            <a>{{ .Blog.Title }}</a>
-                        </p>
-                        <p class="category">{{ .Category.Name }}</p>
-                    </div>
-                    {{ if .Post.Summary }}
-                        <p>{{ .Post.Summary }}</p>
-                    {{ end }}
-                </article>
-            {{ else }}
-                <p>No posts found, subscribe to more blogs.</p>
-            {{ end }}
+        <div class="col-md-9">
+            <h1>Your subscriptions</h1>
+            <div class="posts">
+                {{ range .posts }}
+                    <article>
+                        <div>
+                            <h1>
+                                <a href="//{{ .GetUrl }}">{{ .Post.Title }}</a>
+                            </h1>
+                        </div>
+                        <div>
+                            <p>
+                                <time class="timeago" datetime="{{ .Post.GetISO8601Date }}">{{ .Post.Date }}</time>
+                                on
+                                <a>{{ .Blog.Title }}</a>
+                            </p>
+                            <p class="category">{{ .Category.Name }}</p>
+                        </div>
+                        {{ if .Post.Summary }}
+                            <p>{{ .Post.Summary }}</p>
+                        {{ end }}
+                    </article>
+                {{ else }}
+                    <p>No posts found, subscribe to more blogs.</p>
+                {{ end }}
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <h1>New posts</h1>
+            <div class="posts small">
+                {{ range .new_posts }}
+                    <article>
+                        <div>
+                            <h1>
+                                <a href="//{{ .GetUrl }}">{{ .Post.Title }}</a>
+                            </h1>
+                        </div>
+                        <div>
+                            <p>
+                                <time class="timeago" datetime="{{ .Post.GetISO8601Date }}">{{ .Post.Date }}</time>
+                                on
+                                <a>{{ .Blog.Title }}</a>
+                            </p>
+                        </div>
+                    </article>
+                {{ else }}
+                    <p>No posts found, subscribe to more blogs.</p>
+                {{ end }}
+            </div>
         </div>
     </div>
 {{ end }}
