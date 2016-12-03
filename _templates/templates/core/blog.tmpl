@@ -12,7 +12,7 @@
                     <p>{{.blog.GetUrl}}</p>
                 </a>
 
-                {{ template "subscribtion_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription }}
+                {{ template "subscription_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription }}
 
                 <h2>Categories</h2>
                 <ul class="categories">

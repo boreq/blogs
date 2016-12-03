@@ -6,7 +6,8 @@
         {{ if .blogs }}
             <ul class="blogs">
                 {{range .blogs}}
-                    <li>{{ template "blog" . }}</li>
+                    
+                    <li>{{ template "blog" dict "request" $.request "user" $.user "row" . }}</li>
                 {{end}}
             </ul>
         {{ else }}
@@ -17,17 +18,17 @@
 
 {{ define "blog" }}
     <div>
-        <a class="title" href="{{.GetAbsoluteUrl}}">
+        <a class="title" href="{{.row.Blog.GetAbsoluteUrl}}">
             <h1>
-                {{.Title}}
+                {{.row.Blog.Title}}
             </h1>
         </a>
-        <a class="direct-link" href="//{{.GetUrl}}">{{.GetUrl}}</a>
+        <a class="direct-link" href="//{{.row.GetUrl}}">{{.row.Blog.GetUrl}}</a>
     </div>
     <div>
         <p>
-            {{ if .Updated }}
-                Last post <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
+            {{ if .row.Updated }}
+                Last post <time class="timeago" datetime="{{.row.Updated}}">{{.row.Updated}}</time>
             {{end}}
         </p>
     </div>
