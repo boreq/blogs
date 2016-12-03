@@ -1,38 +1,32 @@
-{{ define "title"}}Blogs{{ end }}
-{{ define "body_id"}}body-blogs{{ end }}
+{{define "title"}}Blogs{{end}}
+{{define "body_id"}}body-blogs{{end}}
 
-{{ define "content" }}
+{{define "content"}}
     <div class="container">
-        {{ if .blogs }}
+        {{if .blogs}}
             <ul class="blogs">
                 {{range .blogs}}
-                    
-                    <li>{{ template "blog" dict "request" $.request "user" $.user "row" . }}</li>
+                    <li>
+                        <div>
+                            <h1>
+                                <a class="title" href="{{.Blog.GetAbsoluteUrl}}">
+                                    {{.Blog.Title}}
+                                </a>
+                            </h1>
+                            <p class="direct-link">
+                                <a href="//{{.GetUrl}}">{{.Blog.GetUrl}}</a>
+                            </p>
+                        </div>
+                        <div>
+                            <p>
+                                {{.Subscriptions}} subscribers
+                            </p>
+                        </div>
+                    </li>
                 {{end}}
             </ul>
-        {{ else }}
+        {{else}}
             <p>There are no blogs in the database! Is this a new deployment?</p>
-        {{ end }}
+        {{end}}
     </div>
-{{ end }}
-
-{{ define "blog" }}
-    <div>
-        <a class="title" href="{{.row.Blog.GetAbsoluteUrl}}">
-            <h1>
-                {{.row.Blog.Title}}
-            </h1>
-        </a>
-        <a class="direct-link" href="//{{.row.GetUrl}}">{{.row.Blog.GetUrl}}</a>
-    </div>
-    <div>
-        <p>
-            {{ if .row.Updated }}
-                Last post <time class="timeago" datetime="{{.row.Updated}}">{{.row.Updated}}</time>
-            {{end}}
-        </p>
-        {{/*
-        {{ template "subscription_buttons" dict "request" .request "user" .user "blog_id" .row.Blog.ID "subscription" .row.SubscriptionID.Valid}}
-        */}}
-    </div>
-{{ end }}
+{{end}}
