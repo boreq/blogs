@@ -74,6 +74,7 @@ func GetDefaultData(r *http.Request) map[string]interface{} {
 	var data = make(map[string]interface{})
 	var ctx = context.Get(r)
 	data["user"] = ctx.User
+	data["request"] = r
 	data["now"] = time.Now()
 	return data
 }
