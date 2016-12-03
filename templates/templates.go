@@ -6,7 +6,6 @@ import (
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
 	"html/template"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
