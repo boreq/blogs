@@ -56,6 +56,7 @@ var createTableQueries = []string{
 	createTagSQL,
 	createPostToTagSQL,
 	createUpdateSQL,
+	createSubscriptionSQL,
 }
 
 var tableNames = []string{
@@ -67,6 +68,7 @@ var tableNames = []string{
 	"update",
 	"category",
 	"blog",
+	"subscription",
 }
 
 // MigrateTables creates missing tables and columns.

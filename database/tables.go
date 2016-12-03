@@ -96,3 +96,15 @@ CREATE TABLE "update" (
 	FOREIGN KEY(blog_id) REFERENCES blog(id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 `
+
+var createSubscriptionSQL = `
+CREATE TABLE "subscription" (
+	id INTEGER PRIMARY KEY,
+	blog_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
+
+	FOREIGN KEY(blog_id) REFERENCES blog(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	UNIQUE(blog_id, user_id)
+)
+`

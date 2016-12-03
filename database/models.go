@@ -74,3 +74,9 @@ type Update struct {
 	Succeeded bool
 	Data      string
 }
+
+type Subscription struct {
+	ID     uint
+	BlogID uint
+	UserID uint
+}
