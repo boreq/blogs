@@ -1,0 +1,38 @@
+{{define "title"}}Posts{{end}}
+{{define "body_id"}}body-posts{{end}}
+
+{{define "content"}}
+    <div class="container">
+        {{if .posts}}
+            <div class="posts">
+                {{range .posts}}
+                    <article>
+                        <div>
+                            <h1>
+                                <a href="//{{.GetPostUrl}}">{{.Post.Title}}</a>
+                            </h1>
+                            <ul class="tags">
+                                {{range .GetPostTags}}
+                                    <li>#{{.Name}}</li>
+                                {{end}}
+                            </ul>
+                        </div>
+                        <div>
+                            <p>
+                                <time class="timeago" datetime="{{.GetISO8601Date}}">{{.Post.Date}}</time>
+                                on
+                                <a href="{{.Blog.GetAbsoluteUrl}}">{{ .Blog.Title }}</a>
+                            </p>
+                            <p class="category">{{.Category.Name}}</p>
+                        </div>
+                        {{if .Post.Summary}}
+                            <p>{{.Post.Summary}}</p>
+                        {{end}}
+                    </article>
+                {{end}}
+            </div>
+        {{else}}
+            <p>There are no posts in the database! Is this a new deployment?</p>
+        {{end}}
+    </div>
+{{end}}
