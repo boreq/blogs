@@ -65,7 +65,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		}
 	}
 
-	var subscription *database.Subscription
+	subscription := &database.Subscription{}
 	ctx := context.Get(r)
 	if ctx.User.IsAuthenticated() {
 		user_id := ctx.User.GetUser().ID
@@ -74,9 +74,13 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			subscription WHERE
 			blog_id=$1 AND user_id=$2
 			LIMIT 1`, id, user_id)
-		if err != nil && err != database.ErrNoRows {
-			errors.InternalServerErrorWithStack(w, r, err)
-			return
+		if err != nil {
+			if err == database.ErrNoRows {
+				subscription = nil
+			} else {
+				errors.InternalServerErrorWithStack(w, r, err)
+				return
+			}
 		}
 	}
 
