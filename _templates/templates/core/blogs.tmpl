@@ -19,7 +19,8 @@
                         </div>
                         <div>
                             <p>
-                                {{.Subscriptions}} subscribers
+                                {{.Subscriptions}} subscribers,
+                                last post <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
                             </p>
                         </div>
                     </li>
