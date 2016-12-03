@@ -31,5 +31,8 @@
                 Last post <time class="timeago" datetime="{{.row.Updated}}">{{.row.Updated}}</time>
             {{end}}
         </p>
+        {{/*
+        {{ template "subscription_buttons" dict "request" .request "user" .user "blog_id" .row.Blog.ID "subscription" .row.SubscriptionID.Valid}}
+        */}}
     </div>
 {{ end }}

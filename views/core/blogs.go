@@ -1,8 +1,10 @@
 package core
 
 import (
+	"database/sql"
 	"errors"
 	"github.com/boreq/blogs/database"
+	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/utils"
 	verrors "github.com/boreq/blogs/views/errors"
@@ -34,19 +36,27 @@ func (t scannableTime) String() string {
 
 type BlogResult struct {
 	database.Blog
-	Updated scannableTime
+	SubscriptionID sql.NullInt64
+	Updated        scannableTime
 }
 
 func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Get the data
+	user_id := -1
+	ctx := context.Get(r)
+	if ctx.User.IsAuthenticated() {
+		user_id = int(ctx.User.GetUser().ID)
+	}
+
 	var blogs = make([]BlogResult, 0)
 	err := database.DB.Select(&blogs, `
-		SELECT blog.*, MAX(post.date) AS updated
+		SELECT blog.*, subscription.id as subscription_id, MAX(post.date) AS updated
 		FROM blog
 		JOIN category ON category.blog_id = blog.id
 		JOIN post ON post.category_id = category.id
+		LEFT JOIN subscription ON subscription.blog_id = blog.id AND subscription.user_id=$1
 		GROUP BY blog.id
-		ORDER BY blog.title`)
+		ORDER BY blog.title`, user_id)
 	if err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
