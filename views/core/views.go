@@ -10,6 +10,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -79,14 +80,22 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	p := utils.NewPagination(r, numPosts, 20)
-	var posts []postCategoryBlog
+	var userId uint
+	ctx := context.Get(r)
+	if ctx.User.IsAuthenticated() {
+		userId = ctx.User.GetUser().ID
+	}
+	var posts []postsResult
 	if err := database.DB.Select(&posts,
-		`SELECT post.*, category.*, blog.*
+		`SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
+		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
+		WHERE blog.id=1
+		GROUP BY post.id
 		ORDER BY post.date DESC
-		LIMIT $1 OFFSET $2`, p.Limit, p.Offset); err != nil {
+		LIMIT $2 OFFSET $3`, userId, p.Limit, p.Offset); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
@@ -151,8 +160,9 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	subscription := &database.Subscription{}
 	ctx := context.Get(r)
+	var user_id uint
 	if ctx.User.IsAuthenticated() {
-		user_id := ctx.User.GetUser().ID
+		user_id = ctx.User.GetUser().ID
 		err = database.DB.Get(subscription,
 			`SELECT * FROM
 			subscription WHERE
@@ -179,14 +189,16 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	var posts []postResult
+	var posts []postsResult
 	err = database.DB.Select(&posts,
-		`SELECT post.*, category.name as category_name, blog.internal_id AS blog_internal_id
+		`SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
-		WHERE blog.id=$1
-		ORDER BY post.date DESC`, id)
+		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
+		WHERE blog.id=$2
+		GROUP BY post.id
+		ORDER BY post.date DESC`, user_id, id)
 	if err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -233,7 +245,7 @@ func subscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		bhttp.RedirectOrNext(w, r, "/")
 		return
 	}
-	user_id := ctx.User.GetUser().ID
+	userId := ctx.User.GetUser().ID
 
 	if _, err := database.DB.Exec(`
 		INSERT INTO subscription(blog_id, user_id)
@@ -242,7 +254,7 @@ func subscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			SELECT 1
 			FROM subscription
 			WHERE blog_id=$1 AND user_id=$2)`,
-		blog_id, user_id); err != nil {
+		blog_id, userId); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
@@ -251,7 +263,7 @@ func subscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func unsubscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	blog_id, err := strconv.ParseUint(r.FormValue("blog_id"), 10, 32)
+	blogId, err := strconv.ParseUint(r.FormValue("blog_id"), 10, 32)
 	if err != nil {
 		verrors.BadRequest(w, r)
 		return
@@ -262,15 +274,63 @@ func unsubscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		bhttp.RedirectOrNext(w, r, "/")
 		return
 	}
-	user_id := ctx.User.GetUser().ID
+	userId := ctx.User.GetUser().ID
 
 	if _, err := database.DB.Exec(`
 		DELETE FROM subscription
 		WHERE blog_id=$1 AND user_id=$2`,
-		blog_id, user_id); err != nil {
+		blogId, userId); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 
+	bhttp.RedirectOrNext(w, r, "/")
+}
+
+func star(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	postId, err := strconv.ParseUint(r.FormValue("post_id"), 10, 32)
+	if err != nil {
+		verrors.BadRequest(w, r)
+		return
+	}
+	ctx := context.Get(r)
+	if !ctx.User.IsAuthenticated() {
+		bhttp.RedirectOrNext(w, r, "/")
+		return
+	}
+	userId := ctx.User.GetUser().ID
+	if _, err := database.DB.Exec(`
+		INSERT INTO star(post_id, user_id, date)
+		SELECT $1, $2, $3
+		WHERE NOT EXISTS(
+			SELECT 1
+			FROM star
+			WHERE post_id=$1 AND user_id=$2)`,
+		postId, userId, time.Now().UTC()); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+	bhttp.RedirectOrNext(w, r, "/")
+}
+
+func unstar(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	postId, err := strconv.ParseUint(r.FormValue("post_id"), 10, 32)
+	if err != nil {
+		verrors.BadRequest(w, r)
+		return
+	}
+	ctx := context.Get(r)
+	if !ctx.User.IsAuthenticated() {
+		bhttp.RedirectOrNext(w, r, "/")
+		return
+	}
+	userId := ctx.User.GetUser().ID
+	if _, err := database.DB.Exec(`
+		DELETE FROM star
+		WHERE post_id=$1 AND user_id=$2`,
+		postId, userId); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
 	bhttp.RedirectOrNext(w, r, "/")
 }

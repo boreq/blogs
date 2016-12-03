@@ -9,6 +9,7 @@
                     <article>
                         <div>
                             <h1>
+                                {{template "star_buttons" dict "request" $.request "user" $.user "post_id" .Post.ID "starred" .Starred.Valid}}
                                 <a href="//{{.GetPostUrl}}">{{.Post.Title}}</a>
                             </h1>
                             <ul class="tags">
@@ -19,9 +20,10 @@
                         </div>
                         <div>
                             <p>
-                                <time class="timeago" datetime="{{.GetISO8601Date}}">{{.Post.Date}}</time>
+                                {{.Post.Stars}} stars,
+                                posted <time class="timeago" datetime="{{.GetISO8601Date}}">{{.Post.Date}}</time>
                                 on
-                                <a href="{{.Blog.GetAbsoluteUrl}}">{{ .Blog.Title }}</a>
+                                <a href="{{.Blog.GetAbsoluteUrl}}">{{.Blog.Title}}</a>
                             </p>
                             <p class="category">{{.Category.Name}}</p>
                         </div>

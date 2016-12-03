@@ -1,0 +1,22 @@
+{{ define "star_buttons" }}
+    {{ if .user.IsAuthenticated }}
+        {{ if .starred }}
+            <form method="POST" class="star-form" action="/post/unstar?next={{ .request.URL }}">
+                <input type="hidden" name="post_id" value="{{ .post_id }}">
+                <button type="submit">
+                    <i class="fa fa-star"></i>
+                </button>
+            </form>
+        {{ else }}
+            <form method="POST" class="star-form" action="/post/star?next={{ .request.URL }}">
+                <input type="hidden" name="post_id" value="{{ .post_id }}">
+                <button type="submit">
+                    <i class="fa fa-star-o"></i>
+                </button>
+            </form>
+        {{ end }}
+    {{ else }}
+        <i class="fa fa-star-o disabled" title="Sign in to star posts"></i>
+    {{ end }}
+{{ end }}
+

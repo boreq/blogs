@@ -1,6 +1,6 @@
-{{ define "title"}}{{.Title}}{{ end }}
+{{define "title"}}{{.Title}}{{end}}
 
-{{ define "content" }}
+{{define "content"}}
     <div class="container">
         <div class="row">
 
@@ -10,7 +10,7 @@
                         <h1>{{.blog.Title}}</h1>
                         <p>{{.blog.GetUrl}}</p>
                     </a>
-                    {{ template "subscription_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription }}
+                    {{template "subscription_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription}}
                 </div>
 
                 <h2>Categories</h2>
@@ -38,7 +38,8 @@
                         <article>
                             <div>
                                 <h1>
-                                    <a href="//{{.GetUrl}}">{{.Title}}</a>
+                                    {{template "star_buttons" dict "request" $.request "user" $.user "post_id" .Post.ID "starred" .Starred.Valid}}
+                                    <a href="//{{.GetUrl}}">{{.Post.Title}}</a>
                                 </h1>
                                 <ul class="tags">
                                     {{range .GetTags}}
@@ -47,12 +48,15 @@
                                 </ul>
                             </div>
                             <div>
-                                <p><time class="timeago" datetime="{{.GetISO8601Date}}">{{.Date}}</time></p>
-                                <p class="category">{{.CategoryName}}</p>
+                                <p>
+                                    {{.Post.Stars}} stars,
+                                    <time class="timeago" datetime="{{.GetISO8601Date}}">{{.Post.Date}}</time>
+                                </p>
+                                <p class="category">{{.Category.Name}}</p>
                             </div>
-                            {{ if .Summary }}
-                                <p>{{.Summary}}</p>
-                            {{ end }}
+                            {{if .Post.Summary}}
+                                <p>{{.Post.Summary}}</p>
+                            {{end }}
                         </article>
                     {{end}}
                 </div>
@@ -60,4 +64,4 @@
 
         </div>
     </div>
-{{ end }}
+{{end}}

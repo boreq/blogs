@@ -130,6 +130,18 @@ html, body {
 }
 
 
+/* --- Star --- */
+.star-form {
+    display: inline;
+
+    button {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        border: 0;
+    }
+}
+
 /* --- Global --- */
 // Those are always on top of the page anyway and they look better that way.
 h1 {
@@ -248,6 +260,10 @@ a:hover {
 
 .dimmed {
     color: $color-dimmed;
+}
+
+.disabled {
+    cursor: not-allowed;
 }
 
 .pagination>.active>a,

@@ -38,6 +38,31 @@ func (p postCategoryBlog) GetPostTags() []database.Tag {
 	return tags
 }
 
+type postsResult struct {
+	postCategoryBlog
+	Starred sql.NullInt64
+}
+
+func (p postsResult) GetTags() []database.Tag {
+	var tags []database.Tag
+	err := database.DB.Select(&tags,
+		`SELECT tag.*
+		FROM tag
+		JOIN post_to_tag ON post_to_tag.tag_id = tag.id
+		JOIN post ON post.id = post_to_tag.post_id
+		WHERE post.id=$1
+		ORDER BY tag.name DESC`, p.Post.ID)
+	if err != nil {
+		panic(err)
+	}
+	return tags
+}
+
+type TagResult struct {
+	database.Tag
+	Count uint
+}
+
 type result struct {
 	postCategoryBlog
 	database.Subscription
@@ -68,38 +93,4 @@ type blogResult struct {
 	database.Blog
 	SubscriptionID sql.NullInt64
 	Subscriptions  uint
-}
-
-type postResult struct {
-	database.Post
-	CategoryName   string
-	BlogInternalID uint
-}
-
-func (p postResult) GetUrl() string {
-	loader, ok := blgs.Blogs[p.BlogInternalID]
-	if ok {
-		return loader.GetPostUrl(p.Post.InternalID)
-	}
-	return ""
-}
-
-func (p postResult) GetTags() []database.Tag {
-	var tags []database.Tag
-	err := database.DB.Select(&tags,
-		`SELECT tag.*
-		FROM tag
-		JOIN post_to_tag ON post_to_tag.tag_id = tag.id
-		JOIN post ON post.id = post_to_tag.post_id
-		WHERE post.id=$1
-		ORDER BY tag.name DESC`, p.Post.ID)
-	if err != nil {
-		panic(err)
-	}
-	return tags
-}
-
-type TagResult struct {
-	database.Tag
-	Count uint
 }

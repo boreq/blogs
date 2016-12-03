@@ -1,6 +1,6 @@
 {{ define "subscription_buttons" }}
     {{ if .user.IsAuthenticated }}
-        {{ if .subscription }}
+        {{ if .starred }}
             <form method="POST" action="/blog/unsubscribe?next={{ .request.URL }}">
                 <input type="hidden" name="blog_id" value="{{ .blog_id }}">
                 <input type="submit" class="btn btn-danger btn-block" value="Unsubscribe">
