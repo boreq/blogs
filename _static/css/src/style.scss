@@ -82,13 +82,17 @@ html, body {
         margin: 0;
         padding: 0;
     }
+
+    .blog-header {
+        text-align: center;
+    }
 }
 
 .posts {
     article {
         display: block;
         padding: 1em 0;
-        border-bottom: 1px solid $border-gray;
+        border-bottom: 1px dotted $border-gray;
 
         >div {
             display: flex;

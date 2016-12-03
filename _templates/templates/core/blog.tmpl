@@ -5,14 +5,13 @@
         <div class="row">
 
             <aside class="col-md-3 blog-info">
-                <a href="//{{.blog.GetUrl}}">
-                    <h1>
-                        {{.blog.Title}}
-                    </h1>
-                    <p>{{.blog.GetUrl}}</p>
-                </a>
-
-                {{ template "subscription_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription }}
+                <div class="blog-header">
+                    <a href="//{{.blog.GetUrl}}">
+                        <h1>{{.blog.Title}}</h1>
+                        <p>{{.blog.GetUrl}}</p>
+                    </a>
+                    {{ template "subscription_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription }}
+                </div>
 
                 <h2>Categories</h2>
                 <ul class="categories">
