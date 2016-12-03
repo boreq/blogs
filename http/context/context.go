@@ -33,9 +33,11 @@ func createContext(r *http.Request) (*Context, error) {
 func Get(r *http.Request) *Context {
 	mutex.Lock()
 	defer mutex.Unlock()
+
 	ctx, ok := contexts[r]
 	if !ok {
-		ctx, err := createContext(r)
+		var err error
+		ctx, err = createContext(r)
 		if err != nil {
 			panic(err)
 		}
