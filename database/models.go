@@ -24,8 +24,9 @@ type UserSession struct {
 type Blog struct {
 	ID uint
 
-	InternalID uint
-	Title      string
+	InternalID    uint
+	Title         string
+	Subscriptions int
 }
 
 func (blog Blog) GetUrl() string {

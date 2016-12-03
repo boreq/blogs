@@ -29,6 +29,7 @@ CREATE TABLE "blog" (
 
 	internal_id INTEGER NOT NULL,
 	title VARCHAR(1000) NOT NULL,
+	subscriptions INT NOT NULL DEFAULT 0,
 
 	UNIQUE(internal_id)
 )
@@ -111,6 +112,20 @@ CREATE TABLE "subscription" (
 )
 `
 
+var createInsertSubscriptionTriggerSQL = `
+CREATE TRIGGER update_subscriptions_insert AFTER INSERT ON subscription 
+BEGIN
+	UPDATE blog SET subscriptions=((SELECT subscriptions FROM blog WHERE blog.id=new.blog_id)+1) WHERE blog.id=new.blog_id;
+END;
+`
+
+var createDeleteSubscriptionTriggerSQL = `
+CREATE TRIGGER update_subscriptions_delete AFTER DELETE ON subscription 
+BEGIN
+	UPDATE blog SET subscriptions=((SELECT subscriptions FROM blog WHERE blog.id=old.blog_id)-1) WHERE blog.id=old.blog_id;
+END;
+`
+
 var createStarSQL = `
 CREATE TABLE "star" (
 	id INTEGER PRIMARY KEY,
@@ -124,9 +139,16 @@ CREATE TABLE "star" (
 )
 `
 
-var createStarTriggerSQL = `
-CREATE TRIGGER update_stars AFTER INSERT ON star 
+var createInsertStarTriggerSQL = `
+CREATE TRIGGER update_stars_insert AFTER INSERT ON star 
 BEGIN
 	UPDATE post SET stars=((SELECT stars FROM post WHERE post.id=new.post_id)+1) WHERE post.id=new.post_id;
+END;
+`
+
+var createDeleteStarTriggerSQL = `
+CREATE TRIGGER update_stars_delete AFTER DELETE ON star 
+BEGIN
+	UPDATE post SET stars=((SELECT stars FROM post WHERE post.id=old.post_id)-1) WHERE post.id=old.post_id;
 END;
 `

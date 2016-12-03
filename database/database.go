@@ -57,7 +57,10 @@ var createTableQueries = []string{
 	createUpdateSQL,
 	createSubscriptionSQL,
 	createStarSQL,
-	createStarTriggerSQL,
+	createInsertStarTriggerSQL,
+	createDeleteStarTriggerSQL,
+	createInsertSubscriptionTriggerSQL,
+	createDeleteSubscriptionTriggerSQL,
 }
 
 var tableNames = []string{
