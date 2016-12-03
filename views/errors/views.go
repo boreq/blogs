@@ -2,8 +2,10 @@ package errors
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/boreq/blogs/templates"
 	"net/http"
+	"runtime/debug"
 )
 
 func displayErrorPage(code int, message string, w http.ResponseWriter, r *http.Request) {
@@ -53,6 +55,12 @@ var internalServerErrorResponse = `
 	<p>Something went really wrong this time.</p>
 	<p><a href="/">Homepage</a></p>
 `
+
+func InternalServerErrorWithStack(w http.ResponseWriter, r *http.Request, err error) {
+	fmt.Printf("%s\n", err)
+	fmt.Println(string(debug.Stack()))
+	InternalServerError(w, r)
+}
 
 func InternalServerError(w http.ResponseWriter, r *http.Request) {
 	buf := bytes.NewBufferString(internalServerErrorResponse)

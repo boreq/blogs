@@ -75,7 +75,7 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			if err == auth.UsernameTakenError {
 				usernameField.AddError("Username is already taken")
 			} else {
-				errors.InternalServerError(w, r)
+				errors.InternalServerErrorWithStack(w, r, err)
 				return
 			}
 		}
@@ -85,7 +85,7 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var data = templates.GetDefaultData(r)
 	data["form"] = form
 	if err := templates.RenderTemplateSafe(w, "auth/register.tmpl", data); err != nil {
-		errors.InternalServerError(w, r)
+		errors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 }
@@ -98,7 +98,7 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			if err == auth.InvalidUsernameOrPasswordError {
 				form.AddError("Invalid username or password")
 			} else {
-				errors.InternalServerError(w, r)
+				errors.InternalServerErrorWithStack(w, r, err)
 				return
 			}
 		} else {
@@ -111,7 +111,7 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var data = templates.GetDefaultData(r)
 	data["form"] = form
 	if err := templates.RenderTemplateSafe(w, "auth/login.tmpl", data); err != nil {
-		errors.InternalServerError(w, r)
+		errors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 }

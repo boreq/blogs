@@ -48,14 +48,14 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		GROUP BY blog.id
 		ORDER BY blog.title`)
 	if err != nil {
-		verrors.InternalServerError(w, r)
+		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 
 	var data = templates.GetDefaultData(r)
 	data["blogs"] = blogs
 	if err := templates.RenderTemplateSafe(w, "core/blogs.tmpl", data); err != nil {
-		verrors.InternalServerError(w, r)
+		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 }

@@ -59,7 +59,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			errors.NotFound(w, r)
 			return
 		} else {
-			errors.InternalServerError(w, r)
+			errors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
 	}
@@ -71,19 +71,20 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		JOIN blog ON blog.id=category.blog_id
 		WHERE blog.id=$1`, id)
 	if err != nil {
-		errors.InternalServerError(w, r)
+		errors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 
 	var posts []postResult
 	err = database.DB.Select(&posts,
-		`SELECT post.*, category.name as category_name, blog.internal_id AS blog_internal_id FROM post
+		`SELECT post.*, category.name as category_name, blog.internal_id AS blog_internal_id
+		FROM post
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
 		WHERE blog.id=$1
 		ORDER BY post.date DESC`, id)
 	if err != nil {
-		errors.InternalServerError(w, r)
+		errors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 
@@ -99,7 +100,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		GROUP BY tag.id
 		ORDER BY count DESC`, id)
 	if err != nil {
-		errors.InternalServerError(w, r)
+		errors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 
@@ -109,8 +110,8 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	data["categories"] = categories
 	data["posts"] = posts
 	data["tags"] = tags
-	if err := templates.RenderTemplate(w, "core/blog.tmpl", data); err != nil {
-		errors.InternalServerError(w, r)
+	if err := templates.RenderTemplateSafe(w, "core/blog.tmpl", data); err != nil {
+		errors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
 }
