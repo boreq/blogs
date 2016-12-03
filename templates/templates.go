@@ -112,7 +112,7 @@ func RenderTemplateSafe(w http.ResponseWriter, name string, data map[string]inte
 	}
 
 	buf := &bytes.Buffer{}
-	err = tmpl.ExecuteTemplate(w, "base", data)
+	err = tmpl.ExecuteTemplate(buf, "base", data)
 	if err != nil {
 		return err
 	}
