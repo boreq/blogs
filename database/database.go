@@ -25,7 +25,6 @@ var log = logging.GetLogger("database")
 var ErrNoRows = sql.ErrNoRows
 
 // Init connects to the specified database.
-// http://jinzhu.me/gorm/database.html#connecting-to-a-database
 func Init(databaseType DatabaseType, params string) (err error) {
 	switch databaseType {
 	case SQLite3:

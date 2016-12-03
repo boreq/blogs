@@ -36,7 +36,7 @@ func (blog Blog) GetUrl() string {
 	return ""
 }
 
-func (blog *Blog) GetAbsoluteUrl() string {
+func (blog Blog) GetAbsoluteUrl() string {
 	return fmt.Sprintf("/blog/%d/%s", blog.ID, utils.Slugify(blog.Title))
 }
 
