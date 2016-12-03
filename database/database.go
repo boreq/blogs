@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/boreq/blogs/logging"
@@ -20,6 +21,8 @@ const (
 // DB becomes initialized after calling Init.
 var DB *sqlx.DB
 var log = logging.GetLogger("database")
+
+var ErrNoRows = sql.ErrNoRows
 
 // Init connects to the specified database.
 // http://jinzhu.me/gorm/database.html#connecting-to-a-database
