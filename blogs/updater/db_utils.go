@@ -74,7 +74,12 @@ type postWithCategory struct {
 
 func getPostsForDeleteOldPosts(blog database.Blog) ([]postWithCategory, error) {
 	var posts []postWithCategory
-	err := database.DB.Select(&posts, "SELECT * FROM post JOIN category ON post.category_id = category.id JOIN blog ON category.blog_id = blog.id WHERE blog.id=$1", blog.ID)
+	err := database.DB.Select(&posts, `
+	SELECT post.*, category.*
+	FROM post
+	JOIN category ON post.category_id=category.id
+	JOIN blog ON category.blog_id=blog.id
+	WHERE blog.id=$1`, blog.ID)
 	return posts, err
 }
 
