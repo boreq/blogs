@@ -35,7 +35,6 @@ func Load(templatesDir string) error {
 		if parentDir == "." {
 			parentDir = ""
 		}
-
 		files := make([]string, 0)
 		for _, fileName := range layouts {
 			fileDir := filepath.Clean(filepath.Dir(fileName))
@@ -49,7 +48,7 @@ func Load(templatesDir string) error {
 			log.Debugf("    dependency %s", fname)
 		}
 		key := layout[len(layoutsDir):]
-		templates[key] = template.Must(template.ParseFiles(files...))
+		templates[key] = template.Must(template.New("").Funcs(getFuncMap()).ParseFiles(files...))
 	}
 	return nil
 }
