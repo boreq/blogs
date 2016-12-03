@@ -2,7 +2,7 @@ package updater
 
 import (
 	"github.com/boreq/blogs/database"
-	"github.com/jmoiron/sqlx"
+	"github.com/boreq/sqlx"
 	"strings"
 	"time"
 )

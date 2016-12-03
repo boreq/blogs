@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/boreq/blogs/logging"
-	"github.com/jmoiron/sqlx"
+	"github.com/boreq/sqlx"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"strings"
