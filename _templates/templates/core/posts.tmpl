@@ -31,6 +31,8 @@
                     </article>
                 {{end}}
             </div>
+
+            {{template "pagination" .pagination}}
         {{else}}
             <p>There are no posts in the database! Is this a new deployment?</p>
         {{end}}

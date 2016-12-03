@@ -79,7 +79,6 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	p := utils.NewPagination(r, numPosts, 20)
-
 	var posts []postCategoryBlog
 	if err := database.DB.Select(&posts,
 		`SELECT post.*, category.*, blog.*
@@ -94,6 +93,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	var data = templates.GetDefaultData(r)
 	data["posts"] = posts
+	data["pagination"] = p
 	if err := templates.RenderTemplateSafe(w, "core/posts.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
