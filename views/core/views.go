@@ -110,11 +110,10 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	var blogs = make([]blogResult, 0)
 	err := database.DB.Select(&blogs, `
-		SELECT blog.*, subscription.id as subscription_id, MAX(post.date) AS updated
+		SELECT blog.*, s1.id AS subscription_id, COUNT(s2.id) AS subscriptions
 		FROM blog
-		JOIN category ON category.blog_id = blog.id
-		JOIN post ON post.category_id = category.id
-		LEFT JOIN subscription ON subscription.blog_id = blog.id AND subscription.user_id=$1
+		LEFT JOIN subscription s1 ON s1.blog_id=blog.id AND s1.user_id=$1
+		LEFT JOIN subscription s2 ON s2.blog_id=blog.id
 		GROUP BY blog.id
 		ORDER BY blog.title`, user_id)
 	if err != nil {
@@ -237,7 +236,7 @@ func subscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	user_id := ctx.User.GetUser().ID
 
 	if _, err := database.DB.Exec(`
-		INSERT INTO subscription(blog_id, user_id) 
+		INSERT INTO subscription(blog_id, user_id)
 		SELECT $1, $2
 		WHERE NOT EXISTS(
 			SELECT 1
