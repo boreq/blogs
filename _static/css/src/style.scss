@@ -48,7 +48,7 @@ html, body {
     li {
         display: block;
         padding: 1em;
-        border-bottom: 1px solid $border-gray;
+        border-bottom: 1px dotted $border-gray;
 
         >div {
             display: flex;
