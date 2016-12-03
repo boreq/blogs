@@ -20,8 +20,18 @@ func funcDict(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
+func funcMinus(a, b int) int {
+	return a - b
+}
+
+func funcPlus(a, b int) int {
+	return a + b
+}
+
 func getFuncMap() template.FuncMap {
 	return template.FuncMap{
-		"dict": funcDict,
+		"dict":  funcDict,
+		"minus": funcMinus,
+		"plus":  funcPlus,
 	}
 }
