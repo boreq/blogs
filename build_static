@@ -6,6 +6,11 @@ cat _static/css/src/style.scss \
     | yui-compressor --type css \
     > _static/css/main.css
 
+cat _static/css/src/style.scss _static/css/src/alt.scss \
+    | sass --stdin --scss \
+    | yui-compressor --type css \
+    > _static/css/alt.css
+
 # JS
 mkdir -p _libs
 
@@ -19,7 +24,7 @@ if [ ! -f _libs/jquery.timeago.js ]; then
     curl http://timeago.yarp.com/jquery.timeago.js > _libs/jquery.timeago.js
 fi
 
-srcfiles=(_libs/jquery.js _libs/jquery.timeago.js)
+srcfiles=(_libs/jquery.js _libs/jquery.timeago.js _static/js/src/main.coffee)
 for i in ${!srcfiles[*]}
 do
     tmpfiles[$i]=$(mktemp)

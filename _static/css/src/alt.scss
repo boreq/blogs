@@ -1,0 +1,20 @@
+html, body {
+    background-color: #eee;
+}
+
+.posts article, .blogs li, .vertical-form, .index-message {
+    border: 1px solid $border-gray;
+    background-color: #fff;
+    margin: 1em 0;
+    padding: 1em;
+}
+
+.posts.small article {
+    border: none;
+    background-color: transparent;
+}
+
+.tags li a{
+    background-color: #fff;
+    margin: .5em;
+}

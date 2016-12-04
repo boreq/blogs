@@ -306,3 +306,18 @@ a:hover {
 .pagination>li>span {
     color: $primary-color;
 }
+
+.js-message {
+    text-align: right;
+}
+
+.js-only {
+    display: none;
+}
+
+footer {
+    a {
+        color: inherit;
+        cursor: pointer;
+    }
+}
