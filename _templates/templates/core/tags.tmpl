@@ -3,20 +3,27 @@
 
 {{define "content"}}
     <div class="container">
-        {{if .tags}}
-            <ul class="tags">
-                {{range .tags}}
-                    <li>
-                        <a>
-                            <h1>#{{.Tag.Name}}</h1>
-                            <p>{{.Count}} posts</p>
-                        </a>
-                    </li>
-                {{end}}
-            </ul>
-            {{template "pagination" .pagination}}
-        {{else}}
-            <p>There are no tags in the database! Is this a new deployment?</p>
-        {{end}}
+        <div class="col-md-2">
+            <h1>Sort</h1>
+            {{template "sort" dict "sort" .sort "context" $}}
+        </div>
+
+        <div class="col-md-10">
+            {{if .tags}}
+                <ul class="tags">
+                    {{range .tags}}
+                        <li>
+                            <a href="/posts?tag={{.Tag.Name}}">
+                                <h1>#{{.Tag.Name}}</h1>
+                                <p>{{.Count}} posts</p>
+                            </a>
+                        </li>
+                    {{end}}
+                </ul>
+                {{template "pagination" .pagination}}
+            {{else}}
+                <p>There are no tags in the database! Is this a new deployment?</p>
+            {{end}}
+        </div>
     </div>
 {{end}}

@@ -472,19 +472,25 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 }
 
 func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	s := utils.NewSort(r, []utils.SortParam{
+		{Key: "name", Label: "Name", Query: "tag.name"},
+		{Key: "posts", Label: "Posts", Query: "count", Reversed: true},
+	})
+	preserveParams := make(map[string]string)
+	preserveParams["sort"] = s.CurrentKey
 	var numTags uint
 	if err := database.DB.Get(&numTags, `SELECT COUNT(*) AS numTags FROM tag`); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	p := utils.NewPagination(r, numTags, 20, nil)
+	p := utils.NewPagination(r, numTags, 20, preserveParams)
 	var tags []tagResult
 	if err := database.DB.Select(&tags,
 		`SELECT tag.*, COUNT(*) AS count
 		FROM tag
 		JOIN post_to_tag ON post_to_tag.tag_id=tag.id
 		GROUP BY tag.id
-		ORDER BY tag.name
+		ORDER BY `+s.Query+`
 		LIMIT $1 OFFSET $2`, p.Limit, p.Offset); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -493,6 +499,7 @@ func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var data = templates.GetDefaultData(r)
 	data["tags"] = tags
 	data["pagination"] = p
+	data["sort"] = s
 	if err := templates.RenderTemplateSafe(w, "core/tags.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
