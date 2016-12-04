@@ -94,7 +94,6 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
 		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
-		WHERE blog.id=1
 		GROUP BY post.id
 		ORDER BY post.date DESC
 		LIMIT $2 OFFSET $3`, userId, p.Limit, p.Offset); err != nil {
