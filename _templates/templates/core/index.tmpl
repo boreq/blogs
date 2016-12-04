@@ -3,7 +3,7 @@
 
 {{define "content"}}
     <div class="container">
-        <div class="col-md-9 col-md-push-3">
+        <div class="col-md-10 col-md-push-2">
             {{if .user.IsAuthenticated}}
                 <h1>Your subscriptions</h1>
                 <div class="posts">
@@ -19,7 +19,12 @@
             {{end}}
         </div>
 
-        <div class="col-md-3 col-md-pull-9">
+        <div class="col-md-2 col-md-pull-10">
+            {{if .user.IsAuthenticated}}
+                <h1>Sort</h1>
+                {{template "sort" dict "sort" .sort "context" $}}
+            {{end}}
+
             <h1>New posts</h1>
             <div class="posts small">
                 {{range .new_posts}}

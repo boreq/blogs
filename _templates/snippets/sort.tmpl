@@ -1,0 +1,20 @@
+{{define "sort"}}
+    <ul class="nav nav-pills nav-stacked">
+        {{range .sort.Criteria}}
+            <li{{if .Selected}} class="active"{{end}}>
+                <a href="?sort={{.GetKey}}">
+                    {{if .Selected}}
+                        {{if .IsAsc}}
+                            <i class="fa fa-sort-asc"></i>
+                        {{else}}
+                            <i class="fa fa-sort-desc"></i>
+                        {{end}}
+                    {{else}}
+                        <i class="fa fa-sort"></i>
+                    {{end}}
+                    {{.Label}}
+                </a>
+            </li>
+        {{end}}
+    </ul>
+{{end}}

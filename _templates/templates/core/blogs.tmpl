@@ -3,14 +3,21 @@
 
 {{define "content"}}
     <div class="container">
-        {{if .blogs}}
-            <ul class="blogs">
-                {{range .blogs}}
-                    {{template "blog" dict "blog" . "context" $}}
-                {{end}}
-            </ul>
-        {{else}}
-            <p>There are no blogs in the database! Is this a new deployment?</p>
-        {{end}}
+        <div class="col-md-2">
+            <h1>Sort</h1>
+            {{template "sort" dict "sort" .sort "context" $}}
+        </div>
+
+        <div class="col-md-10">
+            {{if .blogs}}
+                <ul class="blogs">
+                    {{range .blogs}}
+                        {{template "blog" dict "blog" . "context" $}}
+                    {{end}}
+                </ul>
+            {{else}}
+                <p>There are no blogs in the database! Is this a new deployment?</p>
+            {{end}}
+        </div>
     </div>
 {{end}}

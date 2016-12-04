@@ -16,6 +16,13 @@ import (
 const postsPerPage = 20
 
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	s := utils.NewSort(r, []utils.SortParam{
+		{Key: "date", Label: "Date", Query: "post.date", Reversed: true},
+		{Key: "stars", Label: "Stars", Query: "post.stars", Reversed: true},
+		{Key: "title", Label: "Title", Query: "post.title"},
+	})
+	preserveParams := make(map[string]string)
+	preserveParams["sort"] = s.CurrentKey
 	var posts []postsResult
 
 	ctx := context.Get(r)
@@ -33,7 +40,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
-		pagination = utils.NewPagination(r, numPosts, postsPerPage)
+		pagination = utils.NewPagination(r, numPosts, postsPerPage, preserveParams)
 		if err := database.DB.Select(&posts,
 			`SELECT post.*, category.*, blog.*, star.id AS starred
 			FROM post
@@ -42,7 +49,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			JOIN subscription ON blog.id = subscription.blog_id
 			LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
 			WHERE subscription.user_id=$1
-			ORDER BY post.date DESC
+			ORDER BY `+s.Query+`
 			LIMIT $2 OFFSET $3
 			`, userId, pagination.Limit, pagination.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
@@ -65,6 +72,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data["posts"] = posts
 	data["new_posts"] = newPosts
 	data["pagination"] = pagination
+	data["sort"] = s
 	if err := templates.RenderTemplateSafe(w, "core/index.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -72,6 +80,14 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	s := utils.NewSort(r, []utils.SortParam{
+		{Key: "date", Label: "Date", Query: "post.date", Reversed: true},
+		{Key: "stars", Label: "Stars", Query: "post.stars", Reversed: true},
+		{Key: "title", Label: "Title", Query: "post.title"},
+	})
+	preserveParams := make(map[string]string)
+	preserveParams["sort"] = s.CurrentKey
+
 	var numPosts uint
 	if err := database.DB.Get(&numPosts,
 		`SELECT COUNT(*) AS numPosts
@@ -81,7 +97,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	p := utils.NewPagination(r, numPosts, postsPerPage)
+	p := utils.NewPagination(r, numPosts, postsPerPage, preserveParams)
 	var userId uint
 	ctx := context.Get(r)
 	if ctx.User.IsAuthenticated() {
@@ -95,7 +111,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN blog ON blog.id = category.blog_id
 		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
 		GROUP BY post.id
-		ORDER BY post.date DESC
+		ORDER BY `+s.Query+`
 		LIMIT $2 OFFSET $3`, userId, p.Limit, p.Offset); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -104,6 +120,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var data = templates.GetDefaultData(r)
 	data["posts"] = posts
 	data["pagination"] = p
+	data["sort"] = s
 	if err := templates.RenderTemplateSafe(w, "core/posts.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -118,6 +135,12 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		userId = int(ctx.User.GetUser().ID)
 	}
 
+	s := utils.NewSort(r, []utils.SortParam{
+		{Key: "title", Label: "Title", Query: "blog.title"},
+		{Key: "subscribers", Label: "Subscribers", Query: "blog.subscriptions", Reversed: true},
+		{Key: "last_post", Label: "Last post", Query: "updated", Reversed: true},
+	})
+
 	var blogs = make([]blogResult, 0)
 	err := database.DB.Select(&blogs, `
 		SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
@@ -126,7 +149,7 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN post ON post.category_id=category.id
 		LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
 		GROUP BY blog.id
-		ORDER BY blog.title`, userId)
+		ORDER BY `+s.Query, userId)
 	if err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -134,6 +157,7 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	var data = templates.GetDefaultData(r)
 	data["blogs"] = blogs
+	data["sort"] = s
 	if err := templates.RenderTemplateSafe(w, "core/blogs.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -366,7 +390,7 @@ func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	pagination := utils.NewPagination(r, numPosts, postsPerPage)
+	pagination := utils.NewPagination(r, numPosts, postsPerPage, nil)
 	var posts []postsResult
 	if err := database.DB.Select(&posts,
 		`SELECT post.*, category.*, blog.*
@@ -421,7 +445,7 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	pagination := utils.NewPagination(r, numBlogs, postsPerPage)
+	pagination := utils.NewPagination(r, numBlogs, postsPerPage, nil)
 	var blogs []blogResult
 	if err := database.DB.Select(&blogs,
 		`SELECT blog.*, MAX(post.date) AS updated
@@ -453,7 +477,7 @@ func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	p := utils.NewPagination(r, numTags, 20)
+	p := utils.NewPagination(r, numTags, 20, nil)
 	var tags []tagResult
 	if err := database.DB.Select(&tags,
 		`SELECT tag.*, COUNT(*) AS count

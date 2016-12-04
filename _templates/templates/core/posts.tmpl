@@ -3,15 +3,22 @@
 
 {{define "content"}}
     <div class="container">
-        {{if .posts}}
-            <div class="posts">
-                {{range .posts}}
-                    {{template "post" dict "post" . "context" $}}
-                {{end}}
-            </div>
-            {{template "pagination" .pagination}}
-        {{else}}
-            <p>There are no posts in the database! Is this a new deployment?</p>
-        {{end}}
+        <div class="col-md-2">
+            <h1>Sort</h1>
+            {{template "sort" dict "sort" .sort "context" $}}
+        </div>
+
+        <div class="col-md-10">
+            {{if .posts}}
+                <div class="posts">
+                    {{range .posts}}
+                        {{template "post" dict "post" . "context" $}}
+                    {{end}}
+                </div>
+                {{template "pagination" .pagination}}
+            {{else}}
+                <p>There are no posts in the database! Is this a new deployment?</p>
+            {{end}}
+        </div>
     </div>
 {{end}}
