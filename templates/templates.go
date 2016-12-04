@@ -31,19 +31,34 @@ func Load(templatesDir string) error {
 
 	for _, layout := range layouts {
 		log.Debugf("Loading %s", layout)
+		files := make([]string, 0)
+
+		// Files from parent directories
 		parentDir := filepath.Clean(filepath.Dir(layout) + "/..")
 		if parentDir == "." {
 			parentDir = ""
 		}
-		files := make([]string, 0)
 		for _, fileName := range layouts {
 			fileDir := filepath.Clean(filepath.Dir(fileName))
 			if strings.HasPrefix(parentDir, fileDir) {
 				files = append(files, fileName)
 			}
 		}
+
+		// Partial templates
+		for _, fileName := range layouts {
+			basePath := fileName[:len(fileName)-len(filepath.Ext(fileName))]
+			println(basePath)
+			if strings.HasPrefix(layout, basePath) && layout[len(basePath)] == '_' {
+				println("matches")
+				files = append(files, fileName)
+			}
+		}
+
+		// Layout and snippets
 		files = append(files, layout)
 		files = append(files, snippets...)
+
 		for _, fname := range files {
 			log.Debugf("    dependency %s", fname)
 		}
