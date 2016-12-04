@@ -48,9 +48,7 @@ func Load(templatesDir string) error {
 		// Partial templates
 		for _, fileName := range layouts {
 			basePath := fileName[:len(fileName)-len(filepath.Ext(fileName))]
-			println(basePath)
 			if strings.HasPrefix(layout, basePath) && layout[len(basePath)] == '_' {
-				println("matches")
 				files = append(files, fileName)
 			}
 		}
