@@ -131,6 +131,13 @@ html, body {
             padding: 1em;
             border: 1px solid $border-gray;
         }
+
+        a:hover {
+            color: #fff;
+            background-color: $primary-color;
+            text-decoration: none;
+            cursor: pointer;
+        }
     }
 }
 
