@@ -206,7 +206,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	var tags []TagResult
+	var tags []tagResult
 	err = database.DB.Select(&tags,
 		`SELECT tag.*, COUNT(tag.id) as count
 		FROM tag
@@ -442,6 +442,34 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 	data["blogs"] = blogs
 	data["pagination"] = pagination
 	if err := templates.RenderTemplateSafe(w, "core/profile_subscriptions.tmpl", data); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+}
+
+func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var numTags uint
+	if err := database.DB.Get(&numTags, `SELECT COUNT(*) AS numTags FROM tag`); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+	p := utils.NewPagination(r, numTags, 20)
+	var tags []tagResult
+	if err := database.DB.Select(&tags,
+		`SELECT tag.*, COUNT(*) AS count
+		FROM tag
+		JOIN post_to_tag ON post_to_tag.tag_id=tag.id
+		GROUP BY tag.id
+		ORDER BY tag.name
+		LIMIT $1 OFFSET $2`, p.Limit, p.Offset); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var data = templates.GetDefaultData(r)
+	data["tags"] = tags
+	data["pagination"] = p
+	if err := templates.RenderTemplateSafe(w, "core/tags.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}

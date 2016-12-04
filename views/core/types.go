@@ -58,7 +58,7 @@ func (p postsResult) GetTags() []database.Tag {
 	return tags
 }
 
-type TagResult struct {
+type tagResult struct {
 	database.Tag
 	Count uint
 }

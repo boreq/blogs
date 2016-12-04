@@ -1,0 +1,22 @@
+{{define "title"}}Tags{{end}}
+{{define "body_id"}}body-tags{{end}}
+
+{{define "content"}}
+    <div class="container">
+        {{if .tags}}
+            <ul class="tags">
+                {{range .tags}}
+                    <li>
+                        <a>
+                            <h1>#{{.Tag.Name}}</h1>
+                            <p>{{.Count}} posts</p>
+                        </a>
+                    </li>
+                {{end}}
+            </ul>
+            {{template "pagination" .pagination}}
+        {{else}}
+            <p>There are no tags in the database! Is this a new deployment?</p>
+        {{end}}
+    </div>
+{{end}}

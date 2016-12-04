@@ -34,6 +34,7 @@ html, body {
 #body-index #nav-index .navbar-link,
 #body-blogs #nav-blogs .navbar-link,
 #body-posts #nav-posts .navbar-link,
+#body-tags #nav-tags .navbar-link,
 #body-login #nav-login .navbar-link,
 #body-register #nav-register .navbar-link {
     border-bottom: 3px solid $primary-color;
@@ -107,6 +108,29 @@ html, body {
     article {
         padding: .5em 0;
         border-bottom: none;
+    }
+}
+
+/* --- Tags --- */
+.tags {
+    display: flex;
+    flex-flow: row wrap;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        flex: 1;
+        min-width: 25%;
+        padding: 0;
+        margin: 0;
+
+        a {
+            display: block;
+            margin: 1em;
+            padding: 1em;
+            border: 1px solid $border-gray;
+        }
     }
 }
 
