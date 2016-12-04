@@ -80,6 +80,21 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// tag
+	tag := ""
+	tagParams, ok := r.URL.Query()["tag"]
+	if ok {
+		tag = tagParams[0]
+	}
+
+	// userId
+	var userId uint
+	ctx := context.Get(r)
+	if ctx.User.IsAuthenticated() {
+		userId = ctx.User.GetUser().ID
+	}
+
+	// Sorting
 	s := utils.NewSort(r, []utils.SortParam{
 		{Key: "date", Label: "Date", Query: "post.date", Reversed: true},
 		{Key: "stars", Label: "Stars", Query: "post.stars", Reversed: true},
@@ -87,40 +102,81 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	})
 	preserveParams := make(map[string]string)
 	preserveParams["sort"] = s.CurrentKey
+	if tag != "" {
+		preserveParams["tag"] = tag
+	}
 
-	var numPosts uint
-	if err := database.DB.Get(&numPosts,
-		`SELECT COUNT(*) AS numPosts
+	// Prepare queries
+	var numPostsQuery string
+	var postsQuery string
+	if tag != "" {
+		tagJoin := `
+		JOIN post_to_tag ON post_to_tag.post_id=post.id
+		JOIN tag ON post_to_tag.tag_id=tag.id
+		`
+		tagWhere := "WHERE tag.name=$2"
+		postsQuery = `
+		SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
 		JOIN category ON category.id = post.category_id
-		JOIN blog ON blog.id = category.blog_id`); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
-	}
-	p := utils.NewPagination(r, numPosts, postsPerPage, preserveParams)
-	var userId uint
-	ctx := context.Get(r)
-	if ctx.User.IsAuthenticated() {
-		userId = ctx.User.GetUser().ID
-	}
-	var posts []postsResult
-	if err := database.DB.Select(&posts,
-		`SELECT post.*, category.*, blog.*, star.id AS starred
+		JOIN blog ON blog.id = category.blog_id
+		` + tagJoin + `
+		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
+		` + tagWhere + `
+		GROUP BY post.id
+		ORDER BY ` + s.Query + `
+		LIMIT $3 OFFSET $4`
+		numPostsQuery = `SELECT COUNT(*) AS numPosts FROM post
+			JOIN category ON category.id = post.category_id
+			JOIN blog ON blog.id = category.blog_id
+			` + tagJoin + " " + tagWhere
+	} else {
+		postsQuery = `SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
 		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
 		GROUP BY post.id
-		ORDER BY `+s.Query+`
-		LIMIT $2 OFFSET $3`, userId, p.Limit, p.Offset); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
+		ORDER BY ` + s.Query + `
+		LIMIT $2 OFFSET $3`
+		numPostsQuery = "SELECT COUNT(*) AS numPosts FROM post"
+	}
+
+	// Execute
+	var numPosts uint
+	var posts []postsResult
+
+	if tag == "" {
+		if err := database.DB.Get(&numPosts, numPostsQuery); err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	} else {
+		if err := database.DB.Get(&numPosts, numPostsQuery, tag); err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	}
+
+	p := utils.NewPagination(r, numPosts, postsPerPage, preserveParams)
+
+	if tag == "" {
+		if err := database.DB.Select(&posts, postsQuery, userId, p.Limit, p.Offset); err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	} else {
+		if err := database.DB.Select(&posts, postsQuery, userId, tag, p.Limit, p.Offset); err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
 	}
 
 	var data = templates.GetDefaultData(r)
 	data["posts"] = posts
 	data["pagination"] = p
 	data["sort"] = s
+	data["tag"] = tag
 	if err := templates.RenderTemplateSafe(w, "core/posts.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
