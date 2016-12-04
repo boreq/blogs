@@ -539,7 +539,7 @@ func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	p := utils.NewPagination(r, numTags, 20, preserveParams)
+	p := utils.NewPagination(r, numTags, 28, preserveParams)
 	var tags []tagResult
 	if err := database.DB.Select(&tags,
 		`SELECT tag.*, COUNT(*) AS count
