@@ -6,25 +6,7 @@
         {{if .blogs}}
             <ul class="blogs">
                 {{range .blogs}}
-                    <li>
-                        <div>
-                            <h1>
-                                {{template "subscription_buttons_compact" dict "request" $.request "user" $.user "blog_id" .Blog.ID "subscription" .Subscribed.Valid}}
-                                <a class="title" href="{{.Blog.GetAbsoluteUrl}}">
-                                    {{.Blog.Title}}
-                                </a>
-                            </h1>
-                            <p class="direct-link">
-                                <a href="//{{.GetUrl}}">{{.Blog.GetUrl}}</a>
-                            </p>
-                        </div>
-                        <div>
-                            <p>
-                                {{.Subscriptions}} subscribers,
-                                last post <time class="timeago" datetime="{{.Updated}}">{{.Updated}}</time>
-                            </p>
-                        </div>
-                    </li>
+                    {{template "blog" dict "blog" . "context" $}}
                 {{end}}
             </ul>
         {{else}}
