@@ -1,41 +1,46 @@
-{{ define "title"}}Index{{ end }}
-{{ define "body_id"}}body-index{{ end }}
+{{define "title"}}Index{{end}}
+{{define "body_id"}}body-index{{end}}
 
-{{ define "content" }}
+{{define "content"}}
     <div class="container">
         <div class="col-md-9">
-            <h1>Your subscriptions</h1>
-            <div class="posts">
-                {{ range .posts }}
-                    {{template "post" dict "post" . "context" $}}
-                {{ else }}
-                    <p>No posts found, subscribe to more blogs.</p>
-                {{ end }}
-            </div>
+            {{if .user.IsAuthenticated}}
+                <h1>Your subscriptions</h1>
+                <div class="posts">
+                    {{range .posts}}
+                        {{template "post" dict "post" . "context" $}}
+                    {{else}}
+                        <p>No posts found, subscribe to more blogs.</p>
+                    {{end}}
+                </div>
+                {{template "pagination" .pagination}}
+            {{else}}
+                <p>Hello!</p>
+            {{end}}
         </div>
 
         <div class="col-md-3">
             <h1>New posts</h1>
             <div class="posts small">
-                {{ range .new_posts }}
+                {{range .new_posts}}
                     <article>
                         <div>
                             <h1>
-                                <a href="//{{ .GetUrl }}">{{ .Post.Title }}</a>
+                                <a href="//{{.GetUrl}}">{{.Post.Title}}</a>
                             </h1>
                         </div>
                         <div>
                             <p>
-                                <time class="timeago" datetime="{{ .Post.GetISO8601Date }}">{{ .Post.Date }}</time>
+                                <time class="timeago" datetime="{{.Post.GetISO8601Date}}">{{.Post.Date}}</time>
                                 on
-                                <a>{{ .Blog.Title }}</a>
+                                <a>{{.Blog.Title}}</a>
                             </p>
                         </div>
                     </article>
-                {{ else }}
+                {{else}}
                     <p>No posts found, subscribe to more blogs.</p>
-                {{ end }}
+                {{end}}
             </div>
         </div>
     </div>
-{{ end }}
+{{end}}

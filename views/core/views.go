@@ -13,10 +13,13 @@ import (
 	"time"
 )
 
+const postsPerPage = 20
+
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var posts []postsResult
 
 	ctx := context.Get(r)
+	var pagination utils.Pagination
 	if ctx.User.IsAuthenticated() {
 		userId := ctx.User.GetUser().ID
 		var numPosts uint
@@ -30,7 +33,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
-		p := utils.NewPagination(r, numPosts, 20)
+		pagination := utils.NewPagination(r, numPosts, postsPerPage)
 		if err := database.DB.Select(&posts,
 			`SELECT post.*, category.*, blog.*, star.id AS starred
 			FROM post
@@ -41,7 +44,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			WHERE subscription.user_id=$1
 			ORDER BY post.date DESC
 			LIMIT $2 OFFSET $3
-			`, userId, p.Limit, p.Offset); err != nil {
+			`, userId, pagination.Limit, pagination.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
@@ -61,6 +64,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var data = templates.GetDefaultData(r)
 	data["posts"] = posts
 	data["new_posts"] = newPosts
+	data["pagination"] = pagination
 	if err := templates.RenderTemplateSafe(w, "core/index.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
@@ -77,7 +81,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-	p := utils.NewPagination(r, numPosts, 20)
+	p := utils.NewPagination(r, numPosts, postsPerPage)
 	var userId uint
 	ctx := context.Get(r)
 	if ctx.User.IsAuthenticated() {
