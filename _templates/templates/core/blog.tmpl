@@ -1,4 +1,4 @@
-{{define "title"}}{{.Title}}{{end}}
+{{define "title"}}{{.blog.Title}}{{end}}
 
 {{define "content"}}
     <div class="container">
@@ -13,23 +13,25 @@
                     {{template "subscription_buttons" dict "request" .request "user" .user "blog_id" .blog.ID "subscription" .subscription}}
                 </div>
 
-                <h2>Categories</h2>
-                <ul class="blog-categories">
-                    {{range .categories}}
-                        <li>
-                            <div class="title">
-                                {{if .Name}}{{.Name}}{{else}}Default category{{end}}
-                            </div>
-                        </li>
-                    {{end}}
-                </ul>
+                <div class="hidden-xs hidden-sm">
+                    <h2>Categories</h2>
+                    <ul class="blog-categories">
+                        {{range .categories}}
+                            <li>
+                                <div class="title">
+                                    {{if .Name}}{{.Name}}{{else}}Default category{{end}}
+                                </div>
+                            </li>
+                        {{end}}
+                    </ul>
 
-                <h2>Tags</h2>
-                <ul class="blog-tags">
-                    {{range .tags}}
-                        <li>#{{.Name}}</li>
-                    {{end}}
-                </ul>
+                    <h2>Tags</h2>
+                    <ul class="blog-tags">
+                        {{range .tags}}
+                            <li>#{{.Name}}</li>
+                        {{end}}
+                    </ul>
+                </div>
             </aside>
 
             <div class="col-md-9">
