@@ -5,7 +5,7 @@
                 {{template "star_buttons" dict "request" .context.request "user" .context.user "post_id" .post.Post.ID "starred" .post.Starred.Valid}}
                 <a href="//{{.post.GetPostUrl}}">{{.post.Post.Title}}</a>
             </h1>
-            <ul class="tags">
+            <ul class="post-tags">
                 {{range .post.GetPostTags}}
                     <li>#{{.Name}}</li>
                 {{end}}
