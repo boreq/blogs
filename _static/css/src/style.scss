@@ -89,10 +89,6 @@ html, body {
             .post-tags, .category {
                 text-align: right;
             }
-
-            .post-tags a {
-                color: inherit;
-            }
         }
     }
 }
@@ -137,6 +133,10 @@ html, body {
             cursor: pointer;
         }
     }
+}
+
+.post-tags a, .blog-tags a {
+    color: inherit;
 }
 
 /* --- Blog --- */

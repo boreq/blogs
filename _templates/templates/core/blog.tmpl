@@ -28,7 +28,9 @@
                     <h2>Tags</h2>
                     <ul class="blog-tags">
                         {{range .tags}}
-                            <li>#{{.Name}}</li>
+                            <li>
+                                <a href="/posts?tag={{.Name}}">#{{.Name}}</a>
+                            </li>
                         {{end}}
                     </ul>
                 </div>
