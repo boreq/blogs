@@ -9,6 +9,7 @@
                     <li>
                         <div>
                             <h1>
+                                {{template "subscription_buttons_compact" dict "request" $.request "user" $.user "blog_id" .Blog.ID "subscription" .Subscribed.Valid}}
                                 <a class="title" href="{{.Blog.GetAbsoluteUrl}}">
                                     {{.Blog.Title}}
                                 </a>

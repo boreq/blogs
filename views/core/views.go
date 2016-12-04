@@ -113,21 +113,21 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Get the data
-	user_id := -1
+	userId := -1
 	ctx := context.Get(r)
 	if ctx.User.IsAuthenticated() {
-		user_id = int(ctx.User.GetUser().ID)
+		userId = int(ctx.User.GetUser().ID)
 	}
 
 	var blogs = make([]blogResult, 0)
 	err := database.DB.Select(&blogs, `
-		SELECT blog.*, s1.id AS subscription_id, MAX(post.date) AS updated
+		SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
 		FROM blog
 		JOIN category ON category.blog_id=blog.id
 		JOIN post ON post.category_id=category.id
-		LEFT JOIN subscription s1 ON s1.blog_id=blog.id AND s1.user_id=$1
+		LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
 		GROUP BY blog.id
-		ORDER BY blog.title`, user_id)
+		ORDER BY blog.title`, userId)
 	if err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return

@@ -86,6 +86,6 @@ func (t scannableTime) String() string {
 
 type blogResult struct {
 	database.Blog
-	SubscriptionID sql.NullInt64
-	Updated        scannableTime
+	Updated    scannableTime
+	Subscribed sql.NullInt64
 }

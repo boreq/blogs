@@ -130,16 +130,16 @@ html, body {
 }
 
 
-/* --- Star --- */
-.star-form {
+/* --- Star/subscribe --- */
+.star-form, .subscribe-form-compact {
     display: inline;
+}
 
-    button {
-        background: transparent;
-        padding: 0;
-        margin: 0;
-        border: 0;
-    }
+.button-clear {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    border: 0;
 }
 
 /* --- Global --- */

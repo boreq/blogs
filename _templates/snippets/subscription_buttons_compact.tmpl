@@ -1,19 +1,17 @@
-{{ define "subscription_buttons" }}
+{{ define "subscription_buttons_compact" }}
     {{ if .user.IsAuthenticated }}
         {{ if .subscription }}
-            <form method="POST" action="/blog/unsubscribe?next={{ .request.URL }}">
+            <form method="POST" class="subscribe-form-compact" action="/blog/unsubscribe?next={{ .request.URL }}">
                 <input type="hidden" name="blog_id" value="{{ .blog_id }}">
-                <button type="submit" class="btn btn-danger btn-block" title="Click to unsubscribe">
+                <button type="submit" class="button-clear" title="Click to unsubscribe">
                     <i class="fa fa-paper-plane"></i>
-                    Unsubscribe
                 </button>
             </form>
         {{ else }}
-            <form method="POST" action="/blog/subscribe?next={{ .request.URL }}">
+            <form method="POST" class="subscribe-form-compact" action="/blog/subscribe?next={{ .request.URL }}">
                 <input type="hidden" name="blog_id" value="{{ .blog_id }}">
-                <button type="submit" class="btn btn-success btn-block" title="Click to subscribe">
+                <button type="submit" class="button-clear" title="Click to subscribe">
                     <i class="fa fa-paper-plane-o"></i>
-                    Subscribe
                 </button>
             </form>
         {{ end }}
