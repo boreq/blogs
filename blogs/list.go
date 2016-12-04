@@ -3,6 +3,7 @@ package blogs
 import (
 	"github.com/boreq/blogs/blogs/loaders"
 	"github.com/boreq/blogs/blogs/loaders/eevee"
+	"github.com/boreq/blogs/blogs/loaders/ilikebigbits"
 	"github.com/boreq/blogs/blogs/loaders/lucumr"
 )
 
@@ -13,4 +14,5 @@ func init() {
 	Blogs = make(map[uint]loaders.Blog)
 	Blogs[0] = eevee.New()
 	Blogs[1] = lucumr.New()
+	Blogs[2] = ilikebigbits.New()
 }
