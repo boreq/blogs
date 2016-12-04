@@ -449,7 +449,7 @@ func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	pagination := utils.NewPagination(r, numPosts, postsPerPage, nil)
 	var posts []postsResult
 	if err := database.DB.Select(&posts,
-		`SELECT post.*, category.*, blog.*
+		`SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
@@ -504,7 +504,7 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 	pagination := utils.NewPagination(r, numBlogs, postsPerPage, nil)
 	var blogs []blogResult
 	if err := database.DB.Select(&blogs,
-		`SELECT blog.*, MAX(post.date) AS updated
+		`SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
 		FROM blog
 		JOIN category ON category.blog_id=blog.id
 		JOIN post ON post.category_id=category.id
