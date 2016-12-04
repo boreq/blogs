@@ -16,5 +16,36 @@ html, body {
 
 .tags li a{
     background-color: #fff;
-    margin: .5em;
+}
+
+.nav-pills {
+    li {
+        a {
+            color: inherit;
+            padding: 0;
+        }
+
+    }
+    li:last-child {
+        a {
+            padding-bottom: 1em;
+        }
+    }
+
+    >li.active {
+        >a, >a:hover {
+            color: inherit;
+            background-color: transparent;
+        }
+
+        .sort-label {
+            text-decoration: underline;
+        }
+    }
+}
+
+.filter {
+    a {
+        color: inherit;
+    }
 }
