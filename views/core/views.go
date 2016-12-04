@@ -33,7 +33,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
-		pagination := utils.NewPagination(r, numPosts, postsPerPage)
+		pagination = utils.NewPagination(r, numPosts, postsPerPage)
 		if err := database.DB.Select(&posts,
 			`SELECT post.*, category.*, blog.*, star.id AS starred
 			FROM post
