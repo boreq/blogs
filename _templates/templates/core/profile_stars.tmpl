@@ -1,0 +1,13 @@
+{{define "tab_stars"}} class="active"{{end}}
+
+{{define "profile_content"}}
+	<h1>Stars</h1>
+	<div class="posts">
+		{{range .posts}}
+			{{template "post" dict "post" . "context" $}}
+		{{else}}
+			<p>No posts found.</p>
+		{{end}}
+	</div>
+	{{template "pagination" .pagination}}
+{{end}}

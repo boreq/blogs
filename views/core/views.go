@@ -336,3 +336,113 @@ func unstar(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	bhttp.RedirectOrNext(w, r, "/")
 }
+
+func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	userId, err := strconv.ParseUint(ps.ByName("id"), 10, 32)
+	if err != nil {
+		verrors.BadRequest(w, r)
+		return
+	}
+
+	var profile database.User
+	err = database.DB.Get(&profile, "SELECT * FROM user WHERE id=$1", userId)
+	if err != nil {
+		if err == database.ErrNoRows {
+			verrors.NotFound(w, r)
+			return
+		} else {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	}
+
+	var numPosts uint
+	if err := database.DB.Get(&numPosts,
+		`SELECT COUNT(*) AS numPosts
+		FROM post
+		JOIN star ON star.post_id = post.id
+		JOIN user ON user.id = star.user_id
+		WHERE user.id=$1`, userId); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+	pagination := utils.NewPagination(r, numPosts, postsPerPage)
+	var posts []postsResult
+	if err := database.DB.Select(&posts,
+		`SELECT post.*, category.*, blog.*
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		JOIN star ON star.post_id = post.id
+		JOIN user ON user.id = star.user_id
+		WHERE user.id=$1
+		LIMIT $2 OFFSET $3
+			`, userId, pagination.Limit, pagination.Offset); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var data = templates.GetDefaultData(r)
+	data["profile"] = profile
+	data["posts"] = posts
+	data["pagination"] = pagination
+	if err := templates.RenderTemplateSafe(w, "core/profile_stars.tmpl", data); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+}
+
+func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	userId, err := strconv.ParseUint(ps.ByName("id"), 10, 32)
+	if err != nil {
+		verrors.BadRequest(w, r)
+		return
+	}
+
+	var profile database.User
+	err = database.DB.Get(&profile, "SELECT * FROM user WHERE id=$1", userId)
+	if err != nil {
+		if err == database.ErrNoRows {
+			verrors.NotFound(w, r)
+			return
+		} else {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	}
+
+	var numBlogs uint
+	if err := database.DB.Get(&numBlogs,
+		`SELECT COUNT(*) AS numBlogs
+		FROM blog
+		JOIN subscription ON subscription.blog_id = blog.id
+		JOIN user ON user.id = subscription.user_id
+		WHERE user.id=$1`, userId); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+	pagination := utils.NewPagination(r, numBlogs, postsPerPage)
+	var blogs []blogResult
+	if err := database.DB.Select(&blogs,
+		`SELECT blog.*, MAX(post.date) AS updated
+		FROM blog
+		JOIN category ON category.blog_id=blog.id
+		JOIN post ON post.category_id=category.id
+		JOIN subscription ON subscription.blog_id = blog.id
+		JOIN user ON user.id = subscription.user_id
+		WHERE user.id=$1
+		LIMIT $2 OFFSET $3
+			`, userId, pagination.Limit, pagination.Offset); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var data = templates.GetDefaultData(r)
+	data["profile"] = profile
+	data["blogs"] = blogs
+	data["pagination"] = pagination
+	if err := templates.RenderTemplateSafe(w, "core/profile_subscriptions.tmpl", data); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+}
