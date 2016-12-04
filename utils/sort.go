@@ -21,18 +21,19 @@ type SortCriteria struct {
 }
 
 func (c SortCriteria) GetKey() string {
-	if c.Selected && !c.selectedDesc {
+	if c.shouldSortDesc() {
 		return c.key + "_desc"
+	} else {
+		return c.key
 	}
-	return c.key
 }
 
-func (c SortCriteria) IsAsc() bool {
+func (c SortCriteria) shouldSortDesc() bool {
 	if c.Selected {
-		if c.reversed {
-			return c.selectedDesc
+		if c.selectedDesc {
+			return false
 		} else {
-			return !c.selectedDesc
+			return true
 		}
 	} else {
 		if c.reversed {
@@ -43,9 +44,22 @@ func (c SortCriteria) IsAsc() bool {
 	}
 }
 
+func (c SortCriteria) GetCurrentKey() string {
+	if c.shouldSortDesc() {
+		return c.key
+	} else {
+		return c.key + "_desc"
+	}
+}
+
+func (c SortCriteria) IsAsc() bool {
+	return c.shouldSortDesc()
+}
+
 type Sort struct {
-	Query    string
-	Criteria []SortCriteria
+	Query      string
+	Criteria   []SortCriteria
+	CurrentKey string
 }
 
 // NewSort uses the "sort" query parameter to get the sort key and initialize
@@ -60,14 +74,23 @@ func NewSort(r *http.Request, params []SortParam) Sort {
 	}
 	if sortParam == nil {
 		sortParam = &params[0]
+		desc = sortParam.Reversed
 	}
 
 	query := sortParam.Query
-	if (desc && !sortParam.Reversed) || (!desc && sortParam.Reversed) {
+	if desc {
 		query += " DESC"
 	}
 
-	rv := Sort{Query: query}
+	currentKey := sortParam.Key
+	if desc {
+		currentKey += "_desc"
+	}
+
+	rv := Sort{
+		Query:      query,
+		CurrentKey: currentKey,
+	}
 	for _, param := range params {
 		rv.Criteria = append(rv.Criteria, SortCriteria{
 			key:          param.Key,

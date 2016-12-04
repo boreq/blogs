@@ -82,6 +82,30 @@ func TestSortNoKey(t *testing.T) {
 	}
 }
 
+func TestSortDirectionDefault(t *testing.T) {
+	const key = ""
+	r := makeRequest(key, t)
+
+	sort := NewSort(r, []SortParam{
+		{"key1", "Label 1", "key1.id", true},
+		{"key2", "Label 2", "key2.id", false},
+		{"key3", "Label 3", "key3.id", false},
+	})
+	if sort.Query != "key1.id DESC" {
+		t.Fatal("Wrong query:", sort.Query)
+	}
+	c := sort.Criteria[0]
+	if !c.Selected {
+		t.Fatal("Not selected")
+	}
+	if c.GetKey() != "key1" {
+		t.Fatal("Wrong key")
+	}
+	if c.IsAsc() != false {
+		t.Fatal("Wrong IsAsc")
+	}
+}
+
 func TestSortDirection(t *testing.T) {
 	const key = "key2"
 	r := makeRequest(key, t)
@@ -91,7 +115,7 @@ func TestSortDirection(t *testing.T) {
 		{"key2", "Label 2", "key2.id", true},
 		{"key3", "Label 3", "key3.id", false},
 	})
-	if sort.Query != "key2.id DESC" {
+	if sort.Query != "key2.id" {
 		t.Fatal("Wrong query:", sort.Query)
 	}
 	c := sort.Criteria[1]
@@ -101,7 +125,7 @@ func TestSortDirection(t *testing.T) {
 	if c.GetKey() != "key2_desc" {
 		t.Fatal("Wrong key")
 	}
-	if c.IsAsc() != false {
+	if c.IsAsc() != true {
 		t.Fatal("Wrong IsAsc")
 	}
 }
