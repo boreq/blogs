@@ -90,10 +90,8 @@ html, body {
                 text-align: right;
             }
 
-            .post-tags {
-                li {
-                    display: inline;
-                }
+            .post-tags a {
+                color: inherit;
             }
         }
     }

@@ -37,29 +37,7 @@
             <div class="col-md-9">
                 <div class="posts">
                     {{range .posts}}
-                        <article>
-                            <div>
-                                <h1>
-                                    {{template "star_buttons" dict "request" $.request "user" $.user "post_id" .Post.ID "starred" .Starred.Valid}}
-                                    <a href="//{{.GetUrl}}">{{.Post.Title}}</a>
-                                </h1>
-                                <ul class="post-tags">
-                                    {{range .GetTags}}
-                                        <li>#{{.Name}}</li>
-                                    {{end}}
-                                </ul>
-                            </div>
-                            <div>
-                                <p>
-                                    {{.Post.Stars}} stars,
-                                    <time class="timeago" datetime="{{.GetISO8601Date}}">{{.Post.Date}}</time>
-                                </p>
-                                <p class="category">{{.Category.Name}}</p>
-                            </div>
-                            {{if .Post.Summary}}
-                                <p>{{.Post.Summary}}</p>
-                            {{end }}
-                        </article>
+                        {{template "post" dict "post" . "context" $ "hideon" true}}
                     {{end}}
                 </div>
             </div>

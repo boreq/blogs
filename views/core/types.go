@@ -43,21 +43,6 @@ type postsResult struct {
 	Starred sql.NullInt64
 }
 
-func (p postsResult) GetTags() []database.Tag {
-	var tags []database.Tag
-	err := database.DB.Select(&tags,
-		`SELECT tag.*
-		FROM tag
-		JOIN post_to_tag ON post_to_tag.tag_id = tag.id
-		JOIN post ON post.id = post_to_tag.post_id
-		WHERE post.id=$1
-		ORDER BY tag.name DESC`, p.Post.ID)
-	if err != nil {
-		panic(err)
-	}
-	return tags
-}
-
 type tagResult struct {
 	database.Tag
 	Count uint
