@@ -6,11 +6,6 @@ cat _static/css/src/style.scss \
     | yui-compressor --type css \
     > _static/css/main.css
 
-cat _static/css/src/style.scss _static/css/src/alt.scss \
-    | sass --stdin --scss \
-    | yui-compressor --type css \
-    > _static/css/alt.css
-
 # JS
 mkdir -p _libs
 

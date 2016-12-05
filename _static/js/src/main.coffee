@@ -18,25 +18,7 @@ readCookie = (name) ->
 eraseCookie = (name) ->
     createCookie(name,"",-1)
 
-switchStylesheet = (alt) ->
-    for stylesheet in document.styleSheets
-        if stylesheet.title == "Default"
-            stylesheet.disabled = alt
-        if stylesheet.title == "Alternative"
-            stylesheet.disabled = not alt
-
 $ ->
-    alt = readCookie("stylesheet") == "true"
-    switchStylesheet(alt)
-    $('#toggle-stylesheet').on('click', () ->
-        alt = not alt
-        if alt 
-            createCookie("stylesheet", "true", 100)
-        else
-            createCookie("stylesheet", "false", 100)
-        switchStylesheet(alt)
-    )
-
     $('time.timeago').timeago()
     $('.js-only').css('display', 'inline-block')
 
