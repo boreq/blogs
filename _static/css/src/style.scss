@@ -168,6 +168,28 @@ html, body {
     border: 0;
 }
 
+/* --- Sort --- */
+.nav-sort {
+    padding-bottom: 1em;
+
+    li {
+        a {
+            padding: .2em 0;
+            color: inherit;
+        }
+
+        a:hover {
+            color: $primary-color;
+        }
+    }
+
+    li.active {
+        a {
+            color: $primary-color;
+        }
+    }
+}
+
 /* --- Global --- */
 // Those are always on top of the page anyway and they look better that way.
 h1 {

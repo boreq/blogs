@@ -1,5 +1,5 @@
 {{define "sort"}}
-    <ul class="nav nav-pills nav-stacked">
+    <ul class="nav nav-sort">
         {{range .sort.Criteria}}
             <li{{if .Selected}} class="active"{{end}}>
                 <a href="?sort={{.GetKey}}">
