@@ -6,14 +6,20 @@
         <div class="col-md-10 col-md-push-2">
             {{if .user.IsAuthenticated}}
                 <h1>Your subscriptions</h1>
-                <div class="posts">
-                    {{range .posts}}
-                        {{template "post" dict "post" . "context" $}}
-                    {{else}}
-                        <p>No posts found, subscribe to more blogs.</p>
-                    {{end}}
-                </div>
-                {{template "pagination" .pagination}}
+                {{if .posts}}
+                    <div class="posts">
+                        {{range .posts}}
+                            {{template "post" dict "post" . "context" $}}
+                        {{end}}
+                    </div>
+                    {{template "pagination" .pagination}}
+                {{else}}
+                    <div class="message">
+                        <i class="fa fa-paper-plane-o"></i>
+                        <h1>Almost there!</h1>
+                        <p>Subscribe to blogs and the posts will appear here.</p>
+                    </div>
+                {{end}}
             {{else}}
                 <h1>Hello!</h1>
                 <p class="index-message">The purpose of this website is to
