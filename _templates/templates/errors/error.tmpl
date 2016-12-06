@@ -2,7 +2,10 @@
 
 {{ define "content" }}
     <div class="container">
-        <h1>{{ .error_code }}</h1>
-        <p>{{ .error_message }}</p>
+        <div class="message error">
+            <h1>{{ .error_code }}</h1>
+            <p>{{ .error_message }}</p>
+        </div>
+        <img class="error-gopher" src="/static/img/gopher_tree.svg">
     </div>
 {{ end }}

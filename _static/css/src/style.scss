@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&subset=latin-ext');
+
 $primary-color: #e42d2d;
 $border-color: lighten($primary-color, 20%);
 $border-gray: #ccc;
@@ -8,6 +10,7 @@ $border-radius: 4px;
 
 html, body {
     height: 100%;
+    font-family: 'Roboto', sans-serif; 
 }
 
 .footer {
@@ -336,11 +339,11 @@ a:hover {
 .message {
     text-align: center;
 
-	i {
-		display: block;
-		font-size: 40px;
-		margin-bottom: 20px;
-	}
+    i {
+        display: block;
+        font-size: 40px;
+        margin-bottom: 20px;
+    }
 }
 
 .js-only {
@@ -351,5 +354,16 @@ footer {
     a {
         color: inherit;
         cursor: pointer;
+    }
+}
+
+.error-gopher {
+    width: 100%;
+    display: block;
+}
+
+.message.error {
+    h1 {
+        font-size: 50px;
     }
 }
