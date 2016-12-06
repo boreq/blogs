@@ -503,8 +503,9 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 	pagination := utils.NewPagination(r, numBlogs, postsPerPage, nil)
 	var blogs []blogResult
-	if err := database.DB.Select(&blogs,
-		`SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
+	if numBlogs > 0 {
+		if err := database.DB.Select(&blogs,
+			`SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
 		FROM blog
 		JOIN category ON category.blog_id=blog.id
 		JOIN post ON post.category_id=category.id
@@ -513,8 +514,9 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 		WHERE user.id=$1
 		LIMIT $2 OFFSET $3
 			`, userId, pagination.Limit, pagination.Offset); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
 	}
 
 	var data = templates.GetDefaultData(r)
