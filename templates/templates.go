@@ -53,13 +53,15 @@ func Load(templatesDir string) error {
 			}
 		}
 
+		for _, fname := range files {
+			log.Debugf("    dependency %s", fname)
+		}
+		log.Debugf("    +%d snippets", len(snippets))
+
 		// Layout and snippets
 		files = append(files, layout)
 		files = append(files, snippets...)
 
-		for _, fname := range files {
-			log.Debugf("    dependency %s", fname)
-		}
 		key := layout[len(layoutsDir):]
 		templates[key] = template.Must(template.New("").Funcs(getFuncMap()).ParseFiles(files...))
 	}
