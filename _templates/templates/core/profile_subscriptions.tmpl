@@ -2,12 +2,14 @@
 
 {{define "profile_content"}}
     <h1>Subscriptions</h1>
-    <ul class="blogs">
-        {{range .blogs}}
-            {{template "blog" dict "blog" . "context" $}}
-        {{else}}
-            <p>No blogs found.</p>
-        {{end}}
-    </ul>
-    {{template "pagination" .pagination}}
+    {{if .blogs}}
+        <ul class="blogs">
+            {{range .blogs}}
+                {{template "blog" dict "blog" . "context" $}}
+            {{end}}
+        </ul>
+        {{template "pagination" .pagination}}
+    {{else}}
+        <p>No blogs found.</p>
+    {{end}}
 {{end}}
