@@ -14,6 +14,7 @@ import (
 )
 
 const postsPerPage = 20
+const blogsPerPage = 20
 
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	s := utils.NewSort(r, []utils.SortParam{
@@ -184,36 +185,53 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// Get the data
+	// Sorting
+	s := utils.NewSort(r, []utils.SortParam{
+		{Key: "title", Label: "Title", Query: "blog.title"},
+		{Key: "subscribers", Label: "Subscribers", Query: "blog.subscriptions", Reversed: true},
+		{Key: "last_post", Label: "Last post", Query: "updated", Reversed: true},
+	})
+	preserveParams := map[string]string{
+		"sort": s.CurrentKey,
+	}
+
+	// User id for displaying subscription buttons
 	userId := -1
 	ctx := context.Get(r)
 	if ctx.User.IsAuthenticated() {
 		userId = int(ctx.User.GetUser().ID)
 	}
 
-	s := utils.NewSort(r, []utils.SortParam{
-		{Key: "title", Label: "Title", Query: "blog.title"},
-		{Key: "subscribers", Label: "Subscribers", Query: "blog.subscriptions", Reversed: true},
-		{Key: "last_post", Label: "Last post", Query: "updated", Reversed: true},
-	})
-
-	var blogs = make([]blogResult, 0)
-	err := database.DB.Select(&blogs, `
-		SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
-		FROM blog
-		JOIN category ON category.blog_id=blog.id
-		JOIN post ON post.category_id=category.id
-		LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
-		GROUP BY blog.id
-		ORDER BY `+s.Query, userId)
-	if err != nil {
+	// Count
+	var numBlogs uint
+	if err := database.DB.Get(&numBlogs, `SELECT COUNT(*) AS numBlogs FROM blog`); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
+	p := utils.NewPagination(r, numBlogs, blogsPerPage, preserveParams)
 
+	// Query
+	var blogs []blogResult
+	if numBlogs > 0 {
+		if err := database.DB.Select(&blogs,
+			`SELECT blog.*, MAX(post.date) AS updated, subscription.id AS subscribed
+			FROM blog
+			JOIN category ON category.blog_id=blog.id
+			JOIN post ON post.category_id=category.id
+			LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
+			GROUP BY blog.id
+			ORDER BY `+s.Query+`
+			LIMIT $1 OFFSET $2`, p.Limit, p.Offset, userId); err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	}
+
+	// Render templates
 	var data = templates.GetDefaultData(r)
 	data["blogs"] = blogs
 	data["sort"] = s
+	data["pagination"] = p
 	if err := templates.RenderTemplateSafe(w, "core/blogs.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return

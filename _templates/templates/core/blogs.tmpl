@@ -16,6 +16,7 @@
                         {{template "blog" dict "blog" . "context" $}}
                     {{end}}
                 </ul>
+                {{template "pagination" .pagination}}
             {{else}}
                 <p>There are no blogs in the database! Is this a new deployment?</p>
             {{end}}
