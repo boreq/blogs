@@ -19,6 +19,10 @@ var templates map[string]*template.Template
 // Load should be called before rendering templates using functions contained
 // in this package.
 func Load(templatesDir string) error {
+	if _, err := os.Stat(templatesDir); os.IsNotExist(err) {
+		return err
+	}
+
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
