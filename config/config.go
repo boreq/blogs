@@ -9,14 +9,18 @@ import (
 var Config *ConfigStruct = createDefaultConfig()
 
 type ConfigStruct struct {
-	Debug       bool
-	DatabaseURI string
+	Debug              bool
+	DatabaseURI        string
+	TemplatesDirectory string
+	StaticDirectory    string
 }
 
 func createDefaultConfig() *ConfigStruct {
 	conf := &ConfigStruct{
-		Debug:       false,
-		DatabaseURI: "/tmp/database.sqlite3",
+		Debug:              false,
+		DatabaseURI:        "/tmp/database.sqlite3",
+		TemplatesDirectory: "_templates",
+		StaticDirectory:    "_static",
 	}
 	return conf
 }
