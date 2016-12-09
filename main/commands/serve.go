@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/boreq/blogs/config"
 	"github.com/boreq/blogs/http/handler"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/guinea"
@@ -19,7 +20,7 @@ func initServe(configFilename string) error {
 	if err := coreInit(configFilename); err != nil {
 		return err
 	}
-	if err := templates.Load("_templates/"); err != nil {
+	if err := templates.Load(config.Config.TemplatesDirectory); err != nil {
 		return err
 	}
 	return nil
