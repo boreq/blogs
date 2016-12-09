@@ -7,19 +7,8 @@ import (
 	"os"
 )
 
-var globalOpt = []guinea.Option{
-	guinea.Option{
-		Name:        "help",
-		Type:        guinea.Bool,
-		Default:     false,
-		Description: "Display help",
-	},
-}
-
 func main() {
-	cmd, cmdName, cmdArgs := guinea.FindCommand(&commands.MainCmd, os.Args)
-	cmd.Options = append(cmd.Options, globalOpt...)
-	e := cmd.Execute(cmdName, cmdArgs)
+	e := guinea.Run(&commands.MainCmd)
 	if e != nil {
 		fmt.Fprintln(os.Stderr, e)
 	}
