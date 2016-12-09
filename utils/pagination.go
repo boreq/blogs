@@ -11,7 +11,7 @@ type Pagination struct {
 	// Page is the current page number.
 	Page int
 
-	// AllPages is the number of all pages/last page.
+	// AllPages is the number of all pages/number of the last page.
 	AllPages int
 
 	// HasNext is true if there is a next page.
@@ -27,12 +27,15 @@ type Pagination struct {
 	Limit int
 
 	// URLQuery carries information about parameters preserved during page
-	// changes.
+	// changes. This url query is guarenteed to start with a "?" and end
+	// with a "&" if it is not empty. That means a new part in the form of
+	// "&key=value" can always be safely appended to it.
 	URLQuery string
 }
 
 // NewPagination uses the "page" query parameter to get the page number and
-// initialize the struct.
+// initialize the struct. The provided map will be used to construct an URL
+// query used for carrying over parameters on page changes.
 func NewPagination(r *http.Request, allItems uint, itemsPerPage uint, preserveParams map[string]string) Pagination {
 	page := getPageNumber(r)
 	allPages := int(math.Ceil(float64(allItems) / float64(itemsPerPage)))
