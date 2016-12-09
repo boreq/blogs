@@ -57,8 +57,17 @@ func (c SortCriteria) IsAsc() bool {
 }
 
 type Sort struct {
-	Query      string
-	Criteria   []SortCriteria
+	// Query can be directly used in the ORDER BY clause of an SQL query.
+	Query string
+
+	// Criteria can be used to generate a list in the templates.
+	Criteria []SortCriteria
+
+	// Current key is the value of the "sort" query parameter or the
+	// default value if the parameter is invalid. A parameter is invalid
+	// if it doesn't exist in the parameter list passed to the NewSort.
+	// The default value is the key of the first element of the parameter
+	// list passed to NewSort.
 	CurrentKey string
 }
 
