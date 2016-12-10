@@ -14,59 +14,19 @@ const homeURL = "https://eev.ee/"
 const archiveURL = "https://eev.ee/everything/archives/"
 
 func New() loaders.Blog {
-	rv := &blog{}
-	return rv
+	return loaders.New(domain,
+		archiveURL,
+		loadTitle,
+		isArticleNode,
+		populatePost)
 }
 
-type blog struct{}
-
-func (b *blog) GetUrl() string {
-	return domain
-}
-
-func (b *blog) GetPostUrl(internalID string) string {
-	return domain + "/" + internalID
-}
-
-func (b *blog) LoadTitle() (string, error) {
+func loadTitle() (string, error) {
 	return common.LoadTitle(homeURL)
 }
 
-func (b *blog) LoadPosts() (<-chan loaders.Post, <-chan error) {
-	postChan := make(chan loaders.Post)
-	errorChan := make(chan error)
-	go func() {
-		defer close(postChan)
-		defer close(errorChan)
-		if err := b.yieldPosts(postChan, errorChan); err != nil {
-			errorChan <- err
-		}
-	}()
-	return postChan, errorChan
-}
-
-func (b *blog) yieldPosts(postChan chan<- loaders.Post, errorChan chan<- error) error {
-	doc, err := common.DownloadAndParse(archiveURL)
-	if err != nil {
-		return err
-	}
-
-	// Walk the HTML tree emitting posts
-	htmlutils.WalkAllNodes(doc, func(node *html.Node) {
-		if htmlutils.IsHtmlNode(node, "article") {
-			yieldPost(node, postChan, errorChan)
-		}
-	})
-
-	return nil
-}
-
-func yieldPost(n *html.Node, postChan chan<- loaders.Post, errorChan chan<- error) {
-	post := loaders.Post{}
-	htmlutils.WalkAllNodes(n, func(node *html.Node) {
-		populatePost(node, &post)
-	})
-	postChan <- post
+func isArticleNode(n *html.Node) bool {
+	return htmlutils.IsHtmlNode(n, "article")
 }
 
 func populatePost(n *html.Node, post *loaders.Post) {
