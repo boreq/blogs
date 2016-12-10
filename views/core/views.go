@@ -221,7 +221,7 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
 			GROUP BY blog.id
 			ORDER BY `+s.Query+`
-			LIMIT $1 OFFSET $2`, p.Limit, p.Offset, userId); err != nil {
+			LIMIT $2 OFFSET $3`, userId, p.Limit, p.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
