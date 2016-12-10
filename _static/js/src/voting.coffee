@@ -5,7 +5,6 @@ urls =
     unsubscribe: '/api/blog/unsubscribe'
 
 handleVoteButtonClick = (button, urlSelect, urlUnselect, classSelected, classUnselected) ->
-    console.log($(button).attr('isselected'))
     select = $(button).attr('isselected') == 'false'
     $(button).tooltip('destroy')
     $(button).find('i').attr('class', 'fa fa-spinner fa-spin fa-fw')
@@ -13,8 +12,6 @@ handleVoteButtonClick = (button, urlSelect, urlUnselect, classSelected, classUns
     data = {}
     key = $(button).closest('form').find('input').attr('name')
     data[key] = $(button).closest('form').find('input').val()
-    console.log(select)
-    console.log(data)
 
     $.ajax(
         url: if select then urlSelect else urlUnselect
@@ -30,7 +27,6 @@ handleVoteButtonClick = (button, urlSelect, urlUnselect, classSelected, classUns
     ).fail((response) =>
         $(button).find('i').attr('class', 'fa fa-times fa-fw')
         j = jQuery.parseJSON(response.responseText)
-        console.log(j)
         if 'message' of j
             text = j.message
         else
