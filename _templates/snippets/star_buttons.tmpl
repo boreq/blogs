@@ -3,20 +3,20 @@
         {{ if .starred }}
             <form method="POST" class="star-form" action="/post/unstar?next={{ .request.URL }}">
                 <input type="hidden" name="post_id" value="{{ .post_id }}">
-                <button type="submit" class="button-clear" title="Click to unstar">
-                    <i class="fa fa-star"></i>
+                <button type="submit" class="button-clear" title="Click to unstar" isselected="true">
+                    <i class="fa fa-star fa-fw"></i>
                 </button>
             </form>
         {{ else }}
             <form method="POST" class="star-form" action="/post/star?next={{ .request.URL }}">
                 <input type="hidden" name="post_id" value="{{ .post_id }}">
-                <button type="submit" class="button-clear" title="Click to star">
-                    <i class="fa fa-star-o"></i>
+                <button type="submit" class="button-clear" title="Click to star" isselected="false">
+                    <i class="fa fa-star-o fa-fw"></i>
                 </button>
             </form>
         {{ end }}
     {{ else }}
-        <i class="fa fa-star-o disabled" title="Sign in to star posts"></i>
+        <i class="fa fa-star-o fa-fw disabled" title="Sign in to star posts"></i>
     {{ end }}
 {{ end }}
 

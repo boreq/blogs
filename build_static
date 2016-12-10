@@ -19,7 +19,7 @@ if [ ! -f _libs/jquery.timeago.js ]; then
     curl http://timeago.yarp.com/jquery.timeago.js > _libs/jquery.timeago.js
 fi
 
-srcfiles=(_libs/jquery.js _libs/jquery.timeago.js _static/js/src/main.coffee)
+srcfiles=(_libs/jquery.js _libs/jquery.timeago.js _static/js/src/main.coffee _static/js/src/voting.coffee)
 for i in ${!srcfiles[*]}
 do
     tmpfiles[$i]=$(mktemp)

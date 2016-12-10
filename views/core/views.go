@@ -2,7 +2,6 @@ package core
 
 import (
 	"github.com/boreq/blogs/database"
-	bhttp "github.com/boreq/blogs/http"
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/utils"
@@ -10,7 +9,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 const postsPerPage = 20
@@ -331,108 +329,6 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
-}
-
-func subscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	blog_id, err := strconv.ParseUint(r.FormValue("blog_id"), 10, 32)
-	if err != nil {
-		verrors.BadRequest(w, r)
-		return
-	}
-
-	ctx := context.Get(r)
-	if !ctx.User.IsAuthenticated() {
-		bhttp.RedirectOrNext(w, r, "/")
-		return
-	}
-	userId := ctx.User.GetUser().ID
-
-	if _, err := database.DB.Exec(`
-		INSERT INTO subscription(blog_id, user_id, date)
-		SELECT $1, $2, $3
-		WHERE NOT EXISTS(
-			SELECT 1
-			FROM subscription
-			WHERE blog_id=$1 AND user_id=$2)`,
-		blog_id, userId, time.Now().UTC()); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
-	}
-
-	bhttp.RedirectOrNext(w, r, "/")
-}
-
-func unsubscribe(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	blogId, err := strconv.ParseUint(r.FormValue("blog_id"), 10, 32)
-	if err != nil {
-		verrors.BadRequest(w, r)
-		return
-	}
-
-	ctx := context.Get(r)
-	if !ctx.User.IsAuthenticated() {
-		bhttp.RedirectOrNext(w, r, "/")
-		return
-	}
-	userId := ctx.User.GetUser().ID
-
-	if _, err := database.DB.Exec(`
-		DELETE FROM subscription
-		WHERE blog_id=$1 AND user_id=$2`,
-		blogId, userId); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
-	}
-
-	bhttp.RedirectOrNext(w, r, "/")
-}
-
-func star(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	postId, err := strconv.ParseUint(r.FormValue("post_id"), 10, 32)
-	if err != nil {
-		verrors.BadRequest(w, r)
-		return
-	}
-	ctx := context.Get(r)
-	if !ctx.User.IsAuthenticated() {
-		bhttp.RedirectOrNext(w, r, "/")
-		return
-	}
-	userId := ctx.User.GetUser().ID
-	if _, err := database.DB.Exec(`
-		INSERT INTO star(post_id, user_id, date)
-		SELECT $1, $2, $3
-		WHERE NOT EXISTS(
-			SELECT 1
-			FROM star
-			WHERE post_id=$1 AND user_id=$2)`,
-		postId, userId, time.Now().UTC()); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
-	}
-	bhttp.RedirectOrNext(w, r, "/")
-}
-
-func unstar(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	postId, err := strconv.ParseUint(r.FormValue("post_id"), 10, 32)
-	if err != nil {
-		verrors.BadRequest(w, r)
-		return
-	}
-	ctx := context.Get(r)
-	if !ctx.User.IsAuthenticated() {
-		bhttp.RedirectOrNext(w, r, "/")
-		return
-	}
-	userId := ctx.User.GetUser().ID
-	if _, err := database.DB.Exec(`
-		DELETE FROM star
-		WHERE post_id=$1 AND user_id=$2`,
-		postId, userId); err != nil {
-		verrors.InternalServerErrorWithStack(w, r, err)
-		return
-	}
-	bhttp.RedirectOrNext(w, r, "/")
 }
 
 func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

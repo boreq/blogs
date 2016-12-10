@@ -18,7 +18,7 @@ readCookie = (name) ->
 eraseCookie = (name) ->
     createCookie(name,"",-1)
 
+
 $ ->
     $('time.timeago').timeago()
     $('.js-only').css('display', 'inline-block')
-
