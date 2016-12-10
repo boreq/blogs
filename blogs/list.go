@@ -2,6 +2,7 @@ package blogs
 
 import (
 	"github.com/boreq/blogs/blogs/loaders"
+	"github.com/boreq/blogs/blogs/loaders/datarebellion"
 	"github.com/boreq/blogs/blogs/loaders/eevee"
 	"github.com/boreq/blogs/blogs/loaders/ilikebigbits"
 	"github.com/boreq/blogs/blogs/loaders/lucumr"
@@ -15,4 +16,5 @@ func init() {
 	Blogs[0] = eevee.New()
 	Blogs[1] = lucumr.New()
 	Blogs[2] = ilikebigbits.New()
+	Blogs[4] = datarebellion.New()
 }
