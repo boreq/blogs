@@ -2,6 +2,7 @@ package common
 
 import (
 	"errors"
+	"fmt"
 	htmlutils "github.com/boreq/blogs/utils/html"
 	"golang.org/x/net/html"
 	"net/http"
@@ -16,6 +17,9 @@ func DownloadAndParse(url string) (*html.Node, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Status %d", resp.StatusCode)
+	}
 
 	// Parse the HTML response
 	return html.Parse(resp.Body)
