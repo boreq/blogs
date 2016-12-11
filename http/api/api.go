@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+var InternalServerError = NewError(500, "Internal server error.")
+
 type Error interface {
 	GetCode() int
 	Error() string
@@ -46,4 +48,10 @@ func Call(w http.ResponseWriter, r *http.Request, p httprouter.Params, handle Ha
 	w.WriteHeader(code)
 	_, err = bytes.NewBuffer(j).WriteTo(w)
 	return err
+}
+
+func Wrap(handle Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		Call(w, r, p, handle)
+	}
 }
