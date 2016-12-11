@@ -146,6 +146,8 @@ func (l loader) startPageWorker(url string, postChan chan<- Post, errorChan chan
 }
 
 func (l loader) pageWorker(url string, postChan chan<- Post, errorChan chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	doc, err := common.DownloadAndParse(url)
 	if err != nil {
 		errorChan <- err
@@ -168,15 +170,14 @@ func (l loader) pageWorker(url string, postChan chan<- Post, errorChan chan<- er
 		}
 	})
 	postsWg.Wait()
-
-	wg.Done()
 }
 
 func (l loader) yieldPost(n *html.Node, postChan chan<- Post, errorChan chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	post := Post{}
 	htmlutils.WalkAllNodes(n, func(node *html.Node) {
 		l.populatePost(node, &post)
 	})
 	postChan <- post
-	wg.Done()
 }
