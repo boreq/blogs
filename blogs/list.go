@@ -6,6 +6,7 @@ import (
 	"github.com/boreq/blogs/blogs/loaders/eevee"
 	"github.com/boreq/blogs/blogs/loaders/ilikebigbits"
 	"github.com/boreq/blogs/blogs/loaders/lucumr"
+	"github.com/boreq/blogs/blogs/loaders/yegor256"
 )
 
 // Blogs is a map mapping internal IDs of all supported blogs to their loaders.
@@ -17,4 +18,5 @@ func init() {
 	Blogs[1] = lucumr.New()
 	Blogs[2] = ilikebigbits.New()
 	Blogs[4] = datarebellion.New()
+	Blogs[5] = yegor256.New()
 }
