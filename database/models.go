@@ -69,6 +69,7 @@ type Tag struct {
 }
 
 type Update struct {
+	ID     uint
 	BlogID uint
 
 	Started   time.Time
