@@ -2,7 +2,9 @@ package templates
 
 import (
 	"fmt"
+	"github.com/boreq/blogs/utils"
 	"html/template"
+	"time"
 )
 
 func funcDict(values ...interface{}) (map[string]interface{}, error) {
@@ -28,10 +30,15 @@ func funcPlus(a, b int) int {
 	return a + b
 }
 
+func funcISO8601(t time.Time) string {
+	return utils.ISO8601(t)
+}
+
 func getFuncMap() template.FuncMap {
 	return template.FuncMap{
-		"dict":  funcDict,
-		"minus": funcMinus,
-		"plus":  funcPlus,
+		"dict":    funcDict,
+		"minus":   funcMinus,
+		"plus":    funcPlus,
+		"ISO8601": funcISO8601,
 	}
 }
