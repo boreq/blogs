@@ -481,7 +481,7 @@ func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func updates(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	s := utils.NewSort(r, []utils.SortParam{
-		{Key: "date", Label: "Date", Query: "\"update\".started", Reversed: false},
+		{Key: "date", Label: "Date", Query: "\"update\".started", Reversed: true},
 	})
 	f := utils.NewFilter(r, []utils.FilterParam{
 		{Key: "all", Label: "All", Query: ""},
