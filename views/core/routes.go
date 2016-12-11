@@ -9,6 +9,7 @@ func Register(router *httprouter.Router) {
 	router.GET("/blogs", blogs)
 	router.GET("/posts", posts)
 	router.GET("/tags", tags)
+	router.GET("/updates", updates)
 
 	router.POST("/post/star", star)
 	router.POST("/post/unstar", unstar)

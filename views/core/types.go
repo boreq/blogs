@@ -74,3 +74,8 @@ type blogResult struct {
 	Updated    scannableTime
 	Subscribed sql.NullInt64
 }
+
+type updateResult struct {
+	database.Update
+	database.Blog
+}

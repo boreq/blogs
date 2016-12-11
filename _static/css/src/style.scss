@@ -212,7 +212,7 @@ html, body {
 }
 
 /* --- Sort --- */
-.nav-sort {
+.nav-sort, .nav-filter {
     padding-bottom: 1em;
 
     li {
@@ -231,6 +231,11 @@ html, body {
             color: $primary-color;
         }
     }
+}
+
+/* --- Updates --- */
+#updates-chart {
+    margin: 1em 0;
 }
 
 /* --- Global --- */

@@ -1,0 +1,61 @@
+{{define "title"}}Updates{{end}}
+{{define "body_id"}}body-updates{{end}}
+
+{{define "content"}}
+    <div class="container">
+        <canvas height="100" id="updates-chart" class="js-only"></canvas>
+
+        <div class="col-md-2">
+            <h1>Sort</h1>
+            {{template "sort" dict "sort" .sort}}
+            <h1>Filter</h1>
+            {{template "filter" dict "filter" .filter}}
+        </div>
+
+        <div class="col-md-10">
+            <h1>Updates</h1>
+            {{if .updates}}
+                <table class="table updates">
+                    <thead>
+                        <th>Status</th>
+                        <th>Blog</th>
+                        <th>Started</th>
+                        <th>Ended</th>
+                        <th>Data</th>
+                    </thead>
+                    <tbody>
+                        {{range .updates}}
+                            <tr class="{{if not .Update.Succeeded}}danger{{end}}">
+                                <td><i class="fa {{if .Update.Succeeded}}fa-check{{else}}fa-times{{end}}"></i></td>
+                                <td><a href="{{.Blog.GetAbsoluteUrl}}">{{.Blog.Title}}</a></td>
+                                <td><time class="timeago" datetime="{{ISO8601 .Update.Started}}">{{.Update.Started}}</time></td>
+                                <td><time class="timeago" datetime="{{ISO8601 .Update.Ended}}">{{.Update.Ended}}</time></td>
+                                <td>
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#update-modal-{{.Update.ID}}">
+                                        <i class="fa fa-info" aria-hidden="true"></i>
+                                    </button>
+                                    <div id="update-modal-{{.Update.ID}}" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+                                        <div class="modal-dialog modal-sm" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                    <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <pre>{{.Update.Data}}</pre>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{end}}
+                    </body>
+                </table>
+                {{template "pagination" .pagination}}
+            {{else}}
+                <p>No results.</p>
+            {{end}}
+        </div>
+    </div>
+{{end}}

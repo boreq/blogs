@@ -13,6 +13,7 @@ import (
 
 const postsPerPage = 20
 const blogsPerPage = 20
+const updatesPerPage = 30
 
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	s := utils.NewSort(r, []utils.SortParam{
@@ -473,6 +474,56 @@ func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data["pagination"] = p
 	data["sort"] = s
 	if err := templates.RenderTemplateSafe(w, "core/tags.tmpl", data); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+}
+
+func updates(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	s := utils.NewSort(r, []utils.SortParam{
+		{Key: "date", Label: "Date", Query: "\"update\".started", Reversed: false},
+	})
+	f := utils.NewFilter(r, []utils.FilterParam{
+		{Key: "all", Label: "All", Query: ""},
+		{Key: "success", Label: "Succeeded", Query: "\"update\".succeeded=1"},
+		{Key: "failure", Label: "Failed", Query: "\"update\".succeeded=0"},
+	})
+	preserveParams := make(map[string]string)
+	preserveParams["sort"] = s.CurrentKey
+	preserveParams["filter"] = f.CurrentKey
+
+	where := ""
+	if f.Query != "" {
+		where = "WHERE " + f.Query
+	}
+
+	// Count and paginate
+	var numUpdates uint
+	if err := database.DB.Get(&numUpdates, `SELECT COUNT(*) AS numUpdates FROM "update"`+where); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+	p := utils.NewPagination(r, numUpdates, updatesPerPage, preserveParams)
+
+	// Get rows
+	var updates []updateResult
+	if err := database.DB.Select(&updates,
+		`SELECT "update".*, blog.*
+		FROM "update"
+		JOIN blog ON blog.id="update".blog_id
+		`+where+`
+		ORDER BY `+s.Query+`
+		LIMIT $1 OFFSET $2`, p.Limit, p.Offset); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var data = templates.GetDefaultData(r)
+	data["updates"] = updates
+	data["pagination"] = p
+	data["sort"] = s
+	data["filter"] = f
+	if err := templates.RenderTemplateSafe(w, "core/updates.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
