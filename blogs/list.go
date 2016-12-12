@@ -4,6 +4,7 @@ import (
 	"github.com/boreq/blogs/blogs/loaders"
 	"github.com/boreq/blogs/blogs/loaders/datarebellion"
 	"github.com/boreq/blogs/blogs/loaders/eevee"
+	"github.com/boreq/blogs/blogs/loaders/golang"
 	"github.com/boreq/blogs/blogs/loaders/ilikebigbits"
 	"github.com/boreq/blogs/blogs/loaders/lucumr"
 	"github.com/boreq/blogs/blogs/loaders/yegor256"
@@ -19,4 +20,5 @@ func init() {
 	Blogs[2] = ilikebigbits.New()
 	Blogs[4] = datarebellion.New()
 	Blogs[5] = yegor256.New()
+	Blogs[6] = golang.New()
 }
