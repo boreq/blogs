@@ -32,10 +32,10 @@ func GetUser(r *http.Request) (User, error) {
 	}
 
 	// Update LastSeen
-	session.LastSeen = time.Now()
+	session.UserSession.LastSeen = time.Now()
 	if _, err := database.DB.Exec(
 		"UPDATE user_session SET last_seen=$1 WHERE id=$2",
-		session.LastSeen, session.ID); err != nil {
+		session.UserSession.LastSeen, session.UserSession.ID); err != nil {
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) error {
 	if session != nil {
 		if _, err := database.DB.Exec(
 			"DELETE FROM user_session WHERE id=$1",
-			session.ID); err != nil {
+			session.UserSession.ID); err != nil {
 			return err
 		}
 	}
@@ -76,9 +76,7 @@ func LoginUser(username, password string, w http.ResponseWriter) error {
 
 type userSession struct {
 	database.User
-	SessionID  uint
-	SessionKey string
-	LastSeen   time.Time
+	database.UserSession
 }
 
 func getUserSession(r *http.Request) *userSession {
@@ -88,7 +86,7 @@ func getUserSession(r *http.Request) *userSession {
 	}
 	session := &userSession{}
 	if err := database.DB.Get(session,
-		`SELECT u.*, us.id AS session_id, us.key AS session_key, us.last_seen AS last_seen
+		`SELECT u.*, us.*
 		FROM user_session us
 		JOIN user u ON us.user_id=u.id
 		WHERE us.key=$1
