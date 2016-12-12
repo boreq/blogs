@@ -11,7 +11,7 @@ func NotAuthenticatedOnly(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := context.Get(r)
 		if ctx.User.IsAuthenticated() {
-			http.Redirect(w, r, "/", 301)
+			Redirect(w, r, "/")
 			return
 		}
 		h(w, r, p)
@@ -23,7 +23,7 @@ func AuthenticatedOnly(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := context.Get(r)
 		if !ctx.User.IsAuthenticated() {
-			http.Redirect(w, r, "/", 301)
+			Redirect(w, r, "/")
 			return
 		}
 		h(w, r, p)
