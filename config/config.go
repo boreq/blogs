@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var Config *ConfigStruct = createDefaultConfig()
+var Config *ConfigStruct = Default()
 
 type ConfigStruct struct {
 	Debug              bool
@@ -15,7 +15,7 @@ type ConfigStruct struct {
 	StaticDirectory    string
 }
 
-func createDefaultConfig() *ConfigStruct {
+func Default() *ConfigStruct {
 	conf := &ConfigStruct{
 		Debug:              false,
 		DatabaseURI:        "/tmp/database.sqlite3",
