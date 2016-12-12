@@ -1,14 +1,14 @@
 {{ define "subscription_buttons_compact" }}
     {{ if .user.IsAuthenticated }}
         {{ if .subscription }}
-            <form method="POST" class="subscribe-form-compact" action="/blog/unsubscribe?next={{ .request.URL }}">
+            <form method="POST" class="subscribe-form-compact" action="/nojs/blog/unsubscribe?next={{ .request.URL }}">
                 <input type="hidden" name="blog_id" value="{{ .blog_id }}">
                 <button type="submit" class="button-clear" title="Click to unsubscribe" isselected="true">
                     <i class="fa fa-paper-plane fa-fw"></i>
                 </button>
             </form>
         {{ else }}
-            <form method="POST" class="subscribe-form-compact" action="/blog/subscribe?next={{ .request.URL }}">
+            <form method="POST" class="subscribe-form-compact" action="/nojs/blog/subscribe?next={{ .request.URL }}">
                 <input type="hidden" name="blog_id" value="{{ .blog_id }}">
                 <button type="submit" class="button-clear" title="Click to subscribe" isselected="false">
                     <i class="fa fa-paper-plane-o fa-fw"></i>
