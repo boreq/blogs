@@ -10,17 +10,6 @@ func Register(router *httprouter.Router) {
 	router.GET("/posts", posts)
 	router.GET("/tags", tags)
 	router.GET("/updates", updates)
-
-	router.POST("/post/star", star)
-	router.POST("/post/unstar", unstar)
-	router.POST("/api/post/star", starAjax)
-	router.POST("/api/post/unstar", unstarAjax)
-
-	router.POST("/blog/subscribe", subscribe)
-	router.POST("/blog/unsubscribe", unsubscribe)
-	router.POST("/api/blog/subscribe", subscribeAjax)
-	router.POST("/api/blog/unsubscribe", unsubscribeAjax)
-
 	router.GET("/blog/:id/:name", blog)
 	router.GET("/profile/:id", profile_stars)
 	router.GET("/profile/:id/stars", profile_stars)
