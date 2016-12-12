@@ -15,6 +15,7 @@ type User struct {
 }
 
 type UserSession struct {
+	ID     uint
 	UserID uint
 
 	Key      string
