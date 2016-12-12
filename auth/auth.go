@@ -19,7 +19,7 @@ var InvalidUsernameOrPasswordError = errors.New("Invalid username or password")
 var changeUsernameMutex sync.Mutex
 var log = logging.GetLogger("auth")
 
-const sessionKeyCookieName = "session_key"
+const SessionKeyCookieName = "session_key"
 const sessionKeySize = 256
 const bcryptCost = 10
 
@@ -53,7 +53,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 	}
-	cookie := &http.Cookie{Name: sessionKeyCookieName, MaxAge: -1}
+	cookie := &http.Cookie{Name: SessionKeyCookieName, MaxAge: -1}
 	http.SetCookie(w, cookie)
 	return nil
 }
@@ -69,7 +69,7 @@ func LoginUser(username, password string, w http.ResponseWriter) error {
 	if err != nil {
 		return err
 	}
-	cookie := &http.Cookie{Name: sessionKeyCookieName, Value: sessionKey}
+	cookie := &http.Cookie{Name: SessionKeyCookieName, Value: sessionKey}
 	http.SetCookie(w, cookie)
 	return nil
 }
@@ -82,7 +82,7 @@ type userSession struct {
 }
 
 func getUserSession(r *http.Request) *userSession {
-	sessionCookie, err := r.Cookie(sessionKeyCookieName)
+	sessionCookie, err := r.Cookie(SessionKeyCookieName)
 	if err != nil {
 		return nil
 	}
