@@ -43,8 +43,8 @@ func IsHtmlNode(n *html.Node, name string) bool {
 	return n.Type == html.ElementNode && n.Data == name
 }
 
-// Returns true if the specified node is a text node. Returns false if the node
-// is nil.
+// IsTextNode returns true if the specified node is a text node. Returns false
+// if the node is nil.
 func IsTextNode(n *html.Node) bool {
 	if n == nil {
 		return false
