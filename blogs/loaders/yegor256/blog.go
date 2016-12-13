@@ -11,45 +11,30 @@ import (
 
 const domain = "yegor256.com"
 const homeURL = "http://www.yegor256.com/"
+const archiveURL = "http://www.yegor256.com/contents.html"
 
 func New() loaders.Blog {
-	return loaders.NewPaginated(domain,
-		homeURL,
+	return loaders.New(domain,
+		archiveURL,
 		loadTitle,
 		isArticleNode,
-		populatePost,
-		isNextPageLink,
-		getNextPageURL)
+		populatePost)
 }
 
 func loadTitle() (string, error) {
 	return common.LoadTitle(homeURL)
 }
 
-func isNextPageLink(node *html.Node) bool {
-	return htmlutils.IsHtmlNode(node, "a") &&
-		htmlutils.IsHtmlNode(node.Parent, "div") &&
-		htmlutils.HasAttrVal(node.Parent.Parent, "class", "pagination")
-}
-
-func getNextPageURL(n *html.Node) (string, error) {
-	href, err := htmlutils.GetAttrVal(n.Parent, "href")
-	if err != nil {
-		return "", err
-	}
-	href = homeURL + strings.TrimLeft(href, "/")
-	return href, nil
-}
-
 func isArticleNode(n *html.Node) bool {
-	return htmlutils.HasAttrVal(n, "itemprop", "blogPosts")
+	return htmlutils.IsHtmlNode(n, "div") &&
+		htmlutils.HasAttrVal(n.Parent, "itemprop", "articleBody") &&
+		htmlutils.HasAttrVal(n.Parent, "class", "main")
 }
 
 func populatePost(n *html.Node, post *loaders.Post) {
 	// Id
 	if htmlutils.IsHtmlNode(n, "a") &&
-		htmlutils.IsHtmlNode(n.Parent, "h1") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent, "header") {
+		htmlutils.IsHtmlNode(n.Parent, "div") {
 		if val, err := htmlutils.GetAttrVal(n, "href"); err == nil {
 			val = strings.TrimPrefix(val, "https://"+domain+"/")
 			val = strings.TrimPrefix(val, "http://"+domain+"/")
@@ -69,17 +54,18 @@ func populatePost(n *html.Node, post *loaders.Post) {
 
 	// Title
 	if htmlutils.IsTextNode(n) &&
-		htmlutils.IsHtmlNode(n.Parent, "span") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent, "a") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent.Parent, "h1") {
+		htmlutils.IsHtmlNode(n.Parent, "a") &&
+		htmlutils.IsHtmlNode(n.Parent.Parent, "div") {
 		post.Title = strings.TrimSpace(n.Data)
 	}
 
-	// Summary
+	// Tags
 	if htmlutils.IsTextNode(n) &&
-		htmlutils.IsHtmlNode(n.Parent, "p") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent, "div") &&
-		htmlutils.HasAttrVal(n.Parent.Parent, "itemprop", "description") {
-		post.Summary += strings.TrimSpace(n.Data)
+		htmlutils.IsHtmlNode(n.Parent, "a") {
+		if class, err := htmlutils.GetAttrVal(n.Parent, "class"); err == nil {
+			if strings.Contains(class, "tag") {
+				post.Tags = append(post.Tags, strings.TrimSpace(n.Data))
+			}
+		}
 	}
 }
