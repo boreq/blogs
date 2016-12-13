@@ -19,4 +19,7 @@ func Register(router *httprouter.Router) {
 	router.POST("/nojs/blog/unsubscribe", unsubscribe)
 	router.POST("/api/blog/subscribe", subscribeAjax)
 	router.POST("/api/blog/unsubscribe", unsubscribeAjax)
+
+	// Settings
+	router.POST("/nojs/session/remove", removeSession)
 }

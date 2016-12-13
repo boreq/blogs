@@ -1,0 +1,20 @@
+{{define "title"}}Settings{{end}}
+{{ define "body_id"}}body-settings{{ end }}
+
+{{define "content"}}
+    <div class="container">
+        <div class="col-md-2">
+            <h1>Settings</h1>
+            <ul class="nav nav-pills nav-stacked">
+                <li role="presentation" {{template "tab_sessions" .}}>
+                    <a href="/settings/sessions">Sessions</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-10">
+            {{ template "settings_content" . }}
+        </div>
+    </div>
+{{end}}
+{{define "tab_sessions"}}{{end}}

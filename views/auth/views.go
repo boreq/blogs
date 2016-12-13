@@ -2,9 +2,12 @@ package auth
 
 import (
 	"github.com/boreq/blogs/auth"
+	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/forms"
+	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/views/errors"
+	verrors "github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -119,4 +122,31 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	auth.LogoutUser(w, r)
 	http.Redirect(w, r, "/", 302)
+}
+
+func settingsSessions(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	userId := context.Get(r).User.GetUser().ID
+
+	currentSessionKey := ""
+	if sessionCookie, err := r.Cookie(auth.SessionKeyCookieName); err == nil {
+		currentSessionKey = sessionCookie.Value
+	}
+
+	var sessions []database.UserSession
+	if err := database.DB.Select(&sessions,
+		`SELECT *
+		FROM user_session
+		WHERE user_id=$1
+		ORDER BY last_seen DESC`, userId); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var data = templates.GetDefaultData(r)
+	data["sessions"] = sessions
+	data["currentSessionKey"] = currentSessionKey
+	if err := templates.RenderTemplateSafe(w, "auth/settings_sessions.tmpl", data); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
 }

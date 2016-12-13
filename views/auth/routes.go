@@ -11,4 +11,6 @@ func Register(router *httprouter.Router) {
 	router.GET("/signin", http.NotAuthenticatedOnly(login))
 	router.POST("/signin", http.NotAuthenticatedOnly(login))
 	router.GET("/signout", logout)
+	router.GET("/settings", http.AuthenticatedOnly(settingsSessions))
+	router.GET("/settings/sessions", http.AuthenticatedOnly(settingsSessions))
 }

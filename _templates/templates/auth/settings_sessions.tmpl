@@ -1,0 +1,36 @@
+{{define "tab_sessions"}} class="active"{{end}}
+
+{{ define "settings_content" }}
+    {{if .sessions}}
+        <table class="table sessions">
+            <thead>
+                <tr>
+                    <th>Last seen</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .sessions}}
+                    <tr{{if eq $.currentSessionKey .Key}} class="info"{{end}}>
+                        <td>
+                            <time class="timeago" datetime="{{ISO8601 .LastSeen}}">
+                                {{.LastSeen}}
+                            </time>
+                        </td>
+                        <td>
+                            <form method="POST" action="/nojs/session/remove?next={{$.request.URL}}">
+                                <input type="hidden" name="session_id" value="{{.ID}}">
+                                <button type="submit" class="button-clear button-link">
+                                    <i class="fa fa-times fa-fw"></i>
+                                    <span>Remove session</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+    {{else}}
+        <p>No active sessions?</p>
+    {{end}}
+{{ end }}

@@ -151,3 +151,26 @@ func unstar(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 func unstarAjax(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	api.Call(w, r, p, internalUnstar)
 }
+
+func internalRemoveSession(r *http.Request, _ httprouter.Params) (interface{}, api.Error) {
+	sessionId, err := strconv.ParseUint(r.FormValue("session_id"), 10, 32)
+	if err != nil {
+		return nil, api.NewError(http.StatusBadRequest, "Invalid session id.")
+	}
+	ctx := context.Get(r)
+	if !ctx.User.IsAuthenticated() {
+		return nil, api.NewError(http.StatusUnauthorized, "Sign in to remove sessions.")
+	}
+	userId := ctx.User.GetUser().ID
+	if _, err := database.DB.Exec(`
+		DELETE FROM user_session
+		WHERE id=$1 AND user_id=$2`,
+		sessionId, userId); err != nil {
+		return nil, api.NewError(http.StatusInternalServerError, "Internal server error.")
+	}
+	return struct{}{}, nil
+}
+
+func removeSession(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	callAndHandleErrors(w, r, p, internalRemoveSession)
+}

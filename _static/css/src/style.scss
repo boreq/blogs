@@ -211,6 +211,10 @@ html, body {
     border: 0;
 }
 
+.button-link:hover {
+    color: darken($primary-color, 20%);
+}
+
 /* --- Sort --- */
 .nav-sort, .nav-filter {
     padding-bottom: 1em;
@@ -243,6 +247,10 @@ html, body {
 h1 {
     margin-top: 0;
     font-size: 20px;
+}
+
+h2 {
+    font-size: 18px;
 }
 
 .navbar {
