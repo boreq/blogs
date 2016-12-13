@@ -1,6 +1,7 @@
 package lucumr
 
 import (
+	"errors"
 	"github.com/boreq/blogs/blogs/common"
 	"github.com/boreq/blogs/blogs/loaders"
 	htmlutils "github.com/boreq/blogs/utils/html"
@@ -23,7 +24,31 @@ func New() loaders.Blog {
 }
 
 func loadTitle() (string, error) {
-	return common.LoadTitle(homeURL)
+	doc, err := common.DownloadAndParse(homeURL)
+	if err != nil {
+		return "", err
+	}
+	titleChan := make(chan string)
+	go func() {
+		defer close(titleChan)
+		htmlutils.WalkAllNodes(doc, func(node *html.Node) {
+			if htmlutils.HasAttrVal(node, "class", "header") {
+				title := ""
+				htmlutils.WalkAllNodes(node, func(node *html.Node) {
+					if htmlutils.IsTextNode(node) {
+						title += node.Data
+					}
+				})
+				titleChan <- strings.TrimSpace(title)
+				return
+			}
+		})
+	}()
+	title, ok := <-titleChan
+	if !ok {
+		return "", errors.New("Title not found")
+	}
+	return title, nil
 }
 
 func isNextPageLink(node *html.Node) bool {
