@@ -10,7 +10,7 @@ $border-radius: 4px;
 
 html, body {
     height: 100%;
-    font-family: 'Roboto', sans-serif; 
+    font-family: 'Roboto', sans-serif;
 }
 
 .footer {
@@ -413,6 +413,8 @@ footer {
 .error-gopher {
     width: 100%;
     display: block;
+    margin: 50px 0;
+    max-height: 400px;
 }
 
 .message.error {
