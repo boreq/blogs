@@ -8,25 +8,48 @@ import (
 	"runtime/debug"
 )
 
-func displayErrorPage(code int, message string, w http.ResponseWriter, r *http.Request) {
+func BadRequest(w http.ResponseWriter, r *http.Request) {
+	displayErrorPageOrInternalServerError(400, "Bad Request", w, r)
+}
+
+func NotFound(w http.ResponseWriter, r *http.Request) {
+	displayErrorPageOrInternalServerError(404, "Not Found", w, r)
+}
+
+func InternalServerErrorWithStack(w http.ResponseWriter, r *http.Request, err error) {
+	fmt.Printf("%s\n", err)
+	fmt.Println(string(debug.Stack()))
+	InternalServerError(w, r)
+}
+
+func InternalServerError(w http.ResponseWriter, r *http.Request) {
+	err := displayErrorPage(500, "Internal Server Error", w, r)
+	if err != nil {
+		buf := bytes.NewBufferString(internalServerErrorResponse)
+		w.WriteHeader(500)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		buf.WriteTo(w)
+	}
+}
+
+func displayErrorPageOrInternalServerError(code int, message string, w http.ResponseWriter, r *http.Request) {
+	if err := displayErrorPage(code, message, w, r); err != nil {
+		InternalServerError(w, r)
+	}
+}
+
+func displayErrorPage(code int, message string, w http.ResponseWriter, r *http.Request) error {
 	var data = templates.GetDefaultData(r)
 	data["error_code"] = code
 	data["error_message"] = message
 	err := templates.RenderTemplateSafe(w, "errors/error.tmpl", data)
 	if err != nil {
-		InternalServerError(w, r)
+		return err
 	}
+	return nil
 }
 
-func BadRequest(w http.ResponseWriter, r *http.Request) {
-	displayErrorPage(400, "Bad Request", w, r)
-}
-
-func NotFound(w http.ResponseWriter, r *http.Request) {
-	displayErrorPage(404, "Not Found", w, r)
-}
-
-var internalServerErrorResponse = `
+const internalServerErrorResponse = `
 <!DOCTYPE html>
 <html>
 	<head>
@@ -55,16 +78,3 @@ var internalServerErrorResponse = `
 	<p>Something went really wrong this time.</p>
 	<p><a href="/">Homepage</a></p>
 `
-
-func InternalServerErrorWithStack(w http.ResponseWriter, r *http.Request, err error) {
-	fmt.Printf("%s\n", err)
-	fmt.Println(string(debug.Stack()))
-	InternalServerError(w, r)
-}
-
-func InternalServerError(w http.ResponseWriter, r *http.Request) {
-	buf := bytes.NewBufferString(internalServerErrorResponse)
-	w.WriteHeader(500)
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	buf.WriteTo(w)
-}
