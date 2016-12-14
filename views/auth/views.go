@@ -3,6 +3,7 @@ package auth
 import (
 	"github.com/boreq/blogs/auth"
 	"github.com/boreq/blogs/database"
+	bhttp "github.com/boreq/blogs/http"
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
 	"github.com/boreq/blogs/views/errors"
@@ -17,7 +18,7 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		err := auth.CreateUser(usernameField.GetValue(), passwordField.GetValue())
 		if err == nil {
 			auth.LoginUser(usernameField.GetValue(), passwordField.GetValue(), w)
-			http.Redirect(w, r, "/", 302)
+			bhttp.Redirect(w, r, "/")
 			return
 		} else {
 			if err == auth.UsernameTakenError {
@@ -29,7 +30,6 @@ func register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 	}
 
-	// Render
 	var data = templates.GetDefaultData(r)
 	data["form"] = form
 	if err := templates.RenderTemplateSafe(w, "auth/register.tmpl", data); err != nil {
@@ -50,12 +50,11 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 				return
 			}
 		} else {
-			http.Redirect(w, r, "/", 302)
+			bhttp.Redirect(w, r, "/")
 			return
 		}
 	}
 
-	// Render
 	var data = templates.GetDefaultData(r)
 	data["form"] = form
 	if err := templates.RenderTemplateSafe(w, "auth/login.tmpl", data); err != nil {
@@ -66,7 +65,7 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	auth.LogoutUser(w, r)
-	http.Redirect(w, r, "/", 302)
+	bhttp.Redirect(w, r, "/")
 }
 
 func settingsSessions(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
