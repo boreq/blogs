@@ -1,3 +1,4 @@
+// Package forms provides basic means of parsing HTML forms.
 package forms
 
 import (
