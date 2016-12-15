@@ -16,5 +16,5 @@ func Get() http.Handler {
 		errors.NotFound(w, r)
 	})
 	views.Register(router)
-	return bhttp.RecoverHandler(context.ClearHandler(router))
+	return bhttp.RecoverHandler(context.ClearContext(router))
 }

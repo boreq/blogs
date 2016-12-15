@@ -1,4 +1,4 @@
-// Package context provides easy access to a request bound structure holding
+// Package context provides access to a request-bound structure holding
 // additional parameters. Those commonly used parameters include, for example,
 // information about the logged in user.
 package context
@@ -55,10 +55,10 @@ func Clear(r *http.Request) {
 	delete(contexts, r)
 }
 
-// ClearHandler is a middleware that removes a context once a request is
+// ClearContext is a middleware that removes a context once a request is
 // finished. This is a recommended way of automatically removing contexts
 // associated with requests.
-func ClearHandler(h http.Handler) http.Handler {
+func ClearContext(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer Clear(r)
 		h.ServeHTTP(w, r)
