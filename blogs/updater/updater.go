@@ -1,3 +1,5 @@
+// Package updater implements functions related to saving posts and blogs in
+// the database.
 package updater
 
 import (

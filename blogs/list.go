@@ -1,3 +1,4 @@
+// Package blogs defines a map which links blogs to their loaders.
 package blogs
 
 import (

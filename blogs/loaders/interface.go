@@ -1,3 +1,5 @@
+// Package loaders implements interfaces and data structures used for
+// downloading posts and other data from the blogs.
 package loaders
 
 import (

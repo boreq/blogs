@@ -1,3 +1,4 @@
+// Package common implements default loaders and utility functions.
 package common
 
 import (
