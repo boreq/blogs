@@ -48,7 +48,7 @@
                         </div>
                         <div>
                             <p>
-                                <time class="timeago" datetime="{{.Post.GetISO8601Date}}">{{.Post.Date}}</time>
+                                <time class="timeago" datetime="{{ISO8601 .Post.Date}}">{{.Post.Date}}</time>
                                 on
                                 <a href="{{.Blog.GetAbsoluteUrl}}">{{.Blog.Title}}</a>
                             </p>

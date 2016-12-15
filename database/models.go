@@ -60,10 +60,6 @@ type Post struct {
 	Stars      int
 }
 
-func (post Post) GetISO8601Date() string {
-	return post.Date.Format(time.RFC3339)
-}
-
 type Tag struct {
 	ID   uint
 	Name string

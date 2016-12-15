@@ -14,7 +14,7 @@
         <div>
             <p>
                 {{.post.Post.Stars}} stars,
-                posted <time class="timeago" datetime="{{.post.GetISO8601Date}}">{{.post.Post.Date}}</time>
+                posted <time class="timeago" datetime="{{ISO8601 .post.Date}}">{{.post.Post.Date}}</time>
                 {{if not .hideon}}
                     on
                     <a href="{{.post.Blog.GetAbsoluteUrl}}">{{.post.Blog.Title}}</a>
