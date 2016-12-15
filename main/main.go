@@ -1,3 +1,4 @@
+// Package main contains the main function.
 package main
 
 import (

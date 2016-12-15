@@ -1,3 +1,4 @@
+// Package commands defines the commands used by the guinea library.
 package commands
 
 import (
