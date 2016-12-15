@@ -1,8 +1,12 @@
 {{define "pagination"}}
     <nav>
         <ul class="pager">
-            <li class="previous {{if not .HasPrevious}}disabled{{end}}"><a href="{{.URLQuery}}page={{minus .Page 1}}"><span aria-hidden="true">&larr;</span> Previous</a></li>
-            <li class="next {{if not .HasNext}}disabled{{end}}"><a href="{{.URLQuery}}page={{plus .Page 1}}">Next <span aria-hidden="true">&rarr;</span></a></li>
+            <li class="previous {{if not .HasPrevious}}disabled{{end}}">
+                <a{{if .HasPrevious}} href="{{.URLQuery}}page={{minus .Page 1}}"{{end}}><span aria-hidden="true">&larr;</span> Previous</a>
+            </li>
+            <li class="next {{if not .HasNext}}disabled{{end}}">
+                <a{{if .HasNext}} href="{{.URLQuery}}page={{plus .Page 1}}"{{end}}>Next <span aria-hidden="true">&rarr;</span></a>
+            </li>
         </ul>
     </nav>
 {{end}}
