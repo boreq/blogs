@@ -1,10 +1,10 @@
+// Package database provides database access.
 package database
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/boreq/blogs/logging"
 	"github.com/boreq/sqlx"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,31 +20,9 @@ const (
 
 // DB becomes initialized after calling Init.
 var DB *sqlx.DB
-var log = logging.GetLogger("database")
 
+// ErrNoRows lets the user access sql.ErrNoRows without importing database/sql.
 var ErrNoRows = sql.ErrNoRows
-
-// Init connects to the specified database.
-func Init(databaseType DatabaseType, params string) (err error) {
-	switch databaseType {
-	case SQLite3:
-		DB, err = sqlx.Connect("sqlite3", params)
-		if err != nil {
-			return err
-		}
-		DB.MapperFunc(mapperFunc)
-		break
-	case PostgreSQL:
-		DB, err = sqlx.Connect("postgres", params)
-		if err != nil {
-			return err
-		}
-		break
-	default:
-		return errors.New("Reached the default switch case in database.Init")
-	}
-	return nil
-}
 
 var createTableQueries = []string{
 	createUserSQL,
@@ -76,7 +54,29 @@ var tableNames = []string{
 	"star",
 }
 
-// MigrateTables creates missing tables and columns.
+// Init connects to the specified database.
+func Init(databaseType DatabaseType, params string) (err error) {
+	switch databaseType {
+	case SQLite3:
+		DB, err = sqlx.Connect("sqlite3", params)
+		if err != nil {
+			return err
+		}
+		break
+	case PostgreSQL:
+		DB, err = sqlx.Connect("postgres", params)
+		if err != nil {
+			return err
+		}
+		break
+	default:
+		return errors.New("Reached the default switch case in database.Init")
+	}
+	DB.MapperFunc(mapperFunc)
+	return nil
+}
+
+// CreateTables creates database tables.
 func CreateTables() error {
 	for _, query := range createTableQueries {
 		if _, err := DB.Exec(query); err != nil {
@@ -86,7 +86,7 @@ func CreateTables() error {
 	return nil
 }
 
-// DropTables drops all tables used by this program.
+// DropTables drops all database tables used by this program.
 func DropTables() error {
 	for _, tableName := range tableNames {
 		query := fmt.Sprintf("DROP TABLE IF EXISTS \"%s\"", tableName)

@@ -30,6 +30,8 @@ type Blog struct {
 	Subscriptions int
 }
 
+// GetUrl returns the address of the blog. The address doesn't contain the
+// scheme.
 func (blog Blog) GetUrl() string {
 	loader, ok := blogs.Blogs[blog.InternalID]
 	if ok {
@@ -38,6 +40,7 @@ func (blog Blog) GetUrl() string {
 	return ""
 }
 
+// GetAbsoluteUrl returns an address of this blog's view.
 func (blog Blog) GetAbsoluteUrl() string {
 	return fmt.Sprintf("/blog/%d/%s", blog.ID, utils.Slugify(blog.Title))
 }
