@@ -1,12 +1,10 @@
+// Package config holds the global config.
 package config
 
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 )
-
-var Config *ConfigStruct = Default()
 
 type ConfigStruct struct {
 	Debug              bool
@@ -15,6 +13,11 @@ type ConfigStruct struct {
 	StaticDirectory    string
 }
 
+// Config points to the current config struct used by the other parts of the
+// program.
+var Config *ConfigStruct = Default()
+
+// Default returns the default config.
 func Default() *ConfigStruct {
 	conf := &ConfigStruct{
 		Debug:              false,
@@ -25,12 +28,13 @@ func Default() *ConfigStruct {
 	return conf
 }
 
-// Load loads the config from the specified json file. If the certain keys
-// are not present in the loaded config file, the default values are used.
+// Load loads the config from the specified json file. If certain keys are not
+// present in the loaded config file the current values of the config struct
+// are preserved.
 func Load(filename string) error {
-	content, e := ioutil.ReadFile(filename)
-	if os.IsNotExist(e) {
-		return nil
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
 	}
 	return json.Unmarshal(content, Config)
 }
