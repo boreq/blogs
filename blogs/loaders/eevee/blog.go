@@ -14,7 +14,7 @@ const homeURL = "https://eev.ee/"
 const archiveURL = "https://eev.ee/everything/archives/"
 
 func New() loaders.Blog {
-	return loaders.New(domain,
+	return common.NewLoader(domain,
 		archiveURL,
 		loadTitle,
 		isArticleNode,

@@ -14,7 +14,7 @@ const homeURL = "https://blog.golang.org/"
 const archiveURL = "https://blog.golang.org/index"
 
 func New() loaders.Blog {
-	return loaders.New(domain,
+	return common.NewLoader(domain,
 		archiveURL,
 		loadTitle,
 		isArticleNode,

@@ -14,7 +14,7 @@ const homeURL = "http://www.yegor256.com/"
 const archiveURL = "http://www.yegor256.com/contents.html"
 
 func New() loaders.Blog {
-	return loaders.New(domain,
+	return common.NewLoader(domain,
 		archiveURL,
 		loadTitle,
 		isArticleNode,

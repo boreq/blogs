@@ -14,7 +14,7 @@ const domain = "lucumr.pocoo.org"
 const homeURL = "http://lucumr.pocoo.org/"
 
 func New() loaders.Blog {
-	return loaders.NewPaginated(domain,
+	return common.NewPaginatedLoader(domain,
 		homeURL,
 		loadTitle,
 		isArticleNode,

@@ -14,7 +14,7 @@ const domain = "datarebellion.com/blog"
 const homeURL = "https://datarebellion.com/blog/"
 
 func New() loaders.Blog {
-	return loaders.NewPaginated(domain,
+	return common.NewPaginatedLoader(domain,
 		homeURL,
 		loadTitle,
 		isArticleNode,

@@ -13,7 +13,7 @@ const domain = "ilikebigbits.com"
 const homeURL = "http://www.ilikebigbits.com/"
 
 func New() loaders.Blog {
-	return loaders.New(domain,
+	return common.NewLoader(domain,
 		homeURL,
 		loadTitle,
 		isArticleNode,
