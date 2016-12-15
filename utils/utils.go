@@ -1,3 +1,5 @@
+// Package utils provides various utility functions and helpers for sorting,
+// filtering and pagination.
 package utils
 
 import (

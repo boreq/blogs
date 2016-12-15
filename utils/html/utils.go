@@ -1,5 +1,5 @@
-// Package html contains various utility functions related to parsing html
-// using the golang.org/x/net/html package.
+// Package html contains functions related to parsing HTML using the
+// golang.org/x/net/html package.
 package html
 
 import (
@@ -54,8 +54,8 @@ func IsTextNode(n *html.Node) bool {
 
 type WalkFunc func(n *html.Node)
 
-// WalkAllNodes traverses all nodes in the tree in depth-first order and
-// executes the WalkFunc on them.
+// WalkAllNodes traverses all nodes in depth-first order executing the provided
+// function on them.
 func WalkAllNodes(root *html.Node, walkF WalkFunc) {
 	var f func(*html.Node)
 	f = func(n *html.Node) {
