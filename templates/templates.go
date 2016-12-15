@@ -1,3 +1,4 @@
+// Package templates loads and renders HTML templates.
 package templates
 
 import (
