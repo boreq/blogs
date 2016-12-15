@@ -1,3 +1,4 @@
+// Package api implements a framework for creating a JSON API.
 package api
 
 import (
