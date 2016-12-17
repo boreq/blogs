@@ -43,6 +43,11 @@ type postsResult struct {
 	Starred sql.NullInt64
 }
 
+type popularPostsResult struct {
+	postsResult
+	Score uint
+}
+
 type tagResult struct {
 	database.Tag
 	Count uint
@@ -73,6 +78,11 @@ type blogResult struct {
 	database.Blog
 	Updated    scannableTime
 	Subscribed sql.NullInt64
+}
+
+type popularBlogsResult struct {
+	blogResult
+	Score uint
 }
 
 type updateResult struct {

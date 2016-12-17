@@ -38,6 +38,7 @@ html, body {
 #body-blogs #nav-blogs .navbar-link,
 #body-posts #nav-posts .navbar-link,
 #body-tags #nav-tags .navbar-link,
+#body-explore #nav-explore .navbar-link,
 #body-login #nav-login .navbar-link,
 #body-register #nav-register .navbar-link {
     border-bottom: 3px solid $primary-color;
@@ -57,7 +58,7 @@ html, body {
 
     li {
         display: block;
-        padding: 1em;
+        padding: 1em 0;
         border-bottom: 1px dotted $border-gray;
 
         >div {
@@ -96,16 +97,16 @@ html, body {
     }
 }
 
-.posts.small {
+.posts.small, .blogs.small {
     font-size: 12px;
     h1 {
         font-size: 15px;
     }
+}
 
-    article {
-        padding: .5em 0;
-        border-bottom: none;
-    }
+.posts.small article, .blogs.small li {
+    padding: .5em 0;
+    border-bottom: none;
 }
 
 @media screen and (max-width: 600px){
@@ -240,6 +241,11 @@ html, body {
 /* --- Updates --- */
 #updates-chart {
     margin: 1em 0;
+}
+
+/* --- Explore --- */
+.explore-row {
+    margin-bottom: 4em;
 }
 
 /* --- Global --- */

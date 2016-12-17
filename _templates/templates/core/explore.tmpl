@@ -1,0 +1,66 @@
+{{define "title"}}Explore{{end}}
+{{define "body_id"}}body-explore{{end}}
+
+{{define "content"}}
+    <div class="container">
+
+        {{if .user.IsAuthenticated}}
+            <div class="explore-row row">
+                <div class="col-md-6">
+                    <h1>Recommended blogs</h1>
+                    {{if .recommendedBlogs}}
+                        <ul class="blogs">
+                            {{range .recommendedBlogs}}
+                                {{template "blog_light" dict "blog" . "context" $}}
+                            {{end}}
+                        </ul>
+                    {{else}}
+                        <p>There are no recommended blogs.</p>
+                    {{end}}
+                </div>
+
+                <div class="col-md-6">
+                    <h1>Recommended posts</h1>
+                    {{if .recommendedPosts}}
+                        <div class="posts">
+                            {{range .recommendedPosts}}
+                                {{template "post_light" dict "post" . "context" $}}
+                            {{end}}
+                        </div>
+                    {{else}}
+                        <p>There are no recommended posts.</p>
+                    {{end}}
+                </div>
+            </div>
+        {{end}}
+
+        <div class="explore-row row">
+            <div class="col-md-6">
+                <h1>Popular blogs</h1>
+                {{if .popularBlogs}}
+                    <ul class="blogs">
+                        {{range .popularBlogs}}
+                            {{template "blog_light" dict "blog" . "context" $}}
+                        {{end}}
+                    </ul>
+                {{else}}
+                    <p>There are no popular blogs.</p>
+                {{end}}
+            </div>
+
+            <div class="col-md-6">
+                <h1>Popular posts</h1>
+                {{if .popularPosts}}
+                    <div class="posts">
+                        {{range .popularPosts}}
+                            {{template "post_light" dict "post" . "context" $}}
+                        {{end}}
+                    </div>
+                {{else}}
+                    <p>There are no popular posts.</p>
+                {{end}}
+            </div>
+        </div>
+
+    </div>
+{{end}}

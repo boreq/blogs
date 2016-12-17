@@ -1,0 +1,16 @@
+{{define "post_sidebar"}}
+    <article>
+        <div>
+            <h1>
+                <a href="//{{.GetUrl}}">{{.post.Post.Title}}</a>
+            </h1>
+        </div>
+        <div>
+            <p>
+                <time class="timeago" datetime="{{ISO8601 .post.Post.Date}}">{{.post.Post.Date}}</time>
+                on
+                <a href="{{.post.Blog.GetAbsoluteUrl}}">{{.post.Blog.Title}}</a>
+            </p>
+        </div>
+    </article>
+{{end}}

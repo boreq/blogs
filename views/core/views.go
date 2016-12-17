@@ -7,6 +7,7 @@ import (
 	"github.com/boreq/blogs/utils"
 	verrors "github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -23,7 +24,10 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	})
 	preserveParams := make(map[string]string)
 	preserveParams["sort"] = s.CurrentKey
+
 	var posts []postsResult
+	var recommendedBlog *popularBlogsResult
+	var recommendedPost *popularPostsResult
 
 	ctx := context.Get(r)
 	var pagination utils.Pagination
@@ -55,6 +59,24 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
+
+		recommendedBlogs, err := getRecommendedBlogs(userId, 20)
+		if err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+		if len(recommendedBlogs) > 0 {
+			recommendedBlog = &recommendedBlogs[rand.Intn(len(recommendedBlogs))]
+		}
+
+		recommendedPosts, err := getRecommendedPosts(userId, 20)
+		if err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+		if len(recommendedPosts) > 0 {
+			recommendedPost = &recommendedPosts[rand.Intn(len(recommendedPosts))]
+		}
 	}
 
 	var newPosts []postCategoryBlog
@@ -69,6 +91,8 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	var data = templates.GetDefaultData(r)
+	data["recommendedBlog"] = recommendedBlog
+	data["recommendedPost"] = recommendedPost
 	data["posts"] = posts
 	data["new_posts"] = newPosts
 	data["pagination"] = pagination
@@ -474,6 +498,68 @@ func tags(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data["pagination"] = p
 	data["sort"] = s
 	if err := templates.RenderTemplateSafe(w, "core/tags.tmpl", data); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+}
+
+func explore(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var userId uint
+	var recommendedBlogs []popularBlogsResult
+	var recommendedPosts []popularPostsResult
+	ctx := context.Get(r)
+
+	if ctx.User.IsAuthenticated() {
+		userId = ctx.User.GetUser().ID
+		var err error
+		recommendedBlogs, err = getRecommendedBlogs(userId, 5)
+		if err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+		recommendedPosts, err = getRecommendedPosts(userId, 5)
+		if err != nil {
+			verrors.InternalServerErrorWithStack(w, r, err)
+			return
+		}
+	}
+
+	var popularBlogs []popularBlogsResult
+	if err := database.DB.Select(&popularBlogs,
+		`SELECT blog.*, MAX(post.date) AS updated, sa.id AS subscribed, COUNT(sb.id) AS score
+		FROM blog
+		JOIN category ON category.blog_id=blog.id
+		JOIN post ON post.category_id=category.id
+		LEFT JOIN subscription sa ON sa.blog_id=blog.id AND sa.user_id=$1
+		LEFT JOIN subscription sb ON sb.blog_id=blog.id AND sb.date > (SELECT DATETIME('now', '-7 day'))
+		GROUP BY blog.id
+		ORDER BY score DESC
+		LIMIT 5`, userId); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var popularPosts []popularPostsResult
+	if err := database.DB.Select(&popularPosts,
+		`SELECT post.*, category.*, blog.*, sa.id AS starred, COUNT(sb.id) AS score
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		LEFT JOIN star sa ON sa.post_id = post.id AND sa.user_id = $1
+		LEFT JOIN star sb ON sb.post_id = post.id AND sb.date > (SELECT DATETIME('now', '-7 day'))
+		GROUP BY post.id
+		ORDER BY score DESC
+		LIMIT 5`, userId); err != nil {
+		verrors.InternalServerErrorWithStack(w, r, err)
+		return
+	}
+
+	var data = templates.GetDefaultData(r)
+	data["recommendedBlogs"] = recommendedBlogs
+	data["recommendedPosts"] = recommendedPosts
+	data["popularBlogs"] = popularBlogs
+	data["popularPosts"] = popularPosts
+	if err := templates.RenderTemplateSafe(w, "core/explore.tmpl", data); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}

@@ -37,27 +37,29 @@
                 {{template "sort" dict "sort" .sort "context" $}}
             {{end}}
 
+            {{if .recommendedPost}}
+                <h1>Recommended post</h1>
+                <div class="posts small">
+                    {{template "post_sidebar" dict "post" .recommendedPost}}
+                </div>
+            {{end}}
+
+            {{if .recommendedBlog}}
+                <h1>Recommended blog</h1>
+                <ul class="blogs small">
+                    {{template "blog_sidebar" dict "blog" .recommendedBlog}}
+                </ul>
+            {{end}}
+
             <h1>New posts</h1>
             <div class="posts small">
                 {{range .new_posts}}
-                    <article>
-                        <div>
-                            <h1>
-                                <a href="//{{.GetUrl}}">{{.Post.Title}}</a>
-                            </h1>
-                        </div>
-                        <div>
-                            <p>
-                                <time class="timeago" datetime="{{ISO8601 .Post.Date}}">{{.Post.Date}}</time>
-                                on
-                                <a href="{{.Blog.GetAbsoluteUrl}}">{{.Blog.Title}}</a>
-                            </p>
-                        </div>
-                    </article>
+                    {{template "post_sidebar" dict "post" .}}
                 {{else}}
                     <p>No posts found, subscribe to more blogs.</p>
                 {{end}}
             </div>
+
         </div>
     </div>
 {{end}}

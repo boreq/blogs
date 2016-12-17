@@ -1,0 +1,17 @@
+{{define "blog_sidebar"}}
+    <li>
+        <div>
+            <h1>
+                <a class="title" href="{{.blog.Blog.GetAbsoluteUrl}}">
+                    {{.blog.Blog.Title}}
+                </a>
+            </h1>
+        </div>
+        <div>
+            <p>
+                {{.blog.Blog.Subscriptions}} subscribers,
+                last post <time class="timeago" datetime="{{.blog.Updated}}">{{.blog.Updated}}</time>
+            </p>
+        </div>
+    </li>
+{{end}}

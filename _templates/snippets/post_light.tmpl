@@ -1,0 +1,20 @@
+{{define "post_light"}}
+    <article>
+        <div>
+            <h1>
+                {{template "star_buttons" dict "request" .context.request "user" .context.user "post_id" .post.Post.ID "starred" .post.Starred.Valid}}
+                <a href="//{{.post.GetPostUrl}}">{{.post.Post.Title}}</a>
+            </h1>
+        </div>
+        <div>
+            <p>
+                {{.post.Post.Stars}} stars,
+                posted <time class="timeago" datetime="{{ISO8601 .post.Date}}">{{.post.Post.Date}}</time>
+                {{if not .hideon}}
+                    on
+                    <a href="{{.post.Blog.GetAbsoluteUrl}}">{{.post.Blog.Title}}</a>
+                {{end}}
+            </p>
+        </div>
+    </article>
+{{end}}

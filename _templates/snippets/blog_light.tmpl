@@ -1,0 +1,18 @@
+{{define "blog_light"}}
+    <li>
+        <div>
+            <h1>
+                {{template "subscription_buttons_compact" dict "request" .context.request "user" .context.user "blog_id" .blog.Blog.ID "subscription" .blog.Subscribed.Valid}}
+                <a class="title" href="{{.blog.Blog.GetAbsoluteUrl}}">
+                    {{.blog.Blog.Title}}
+                </a>
+            </h1>
+        </div>
+        <div>
+            <p>
+                {{.blog.Blog.Subscriptions}} subscribers,
+                last post <time class="timeago" datetime="{{.blog.Updated}}">{{.blog.Updated}}</time>
+            </p>
+        </div>
+    </li>
+{{end}}
