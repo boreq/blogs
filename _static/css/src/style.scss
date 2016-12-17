@@ -436,10 +436,12 @@ footer {
     justify-content: space-around;
     align-items: center;
     font-size: 20px;
+    margin-left: -1em;
+    margin-right: -1em;
 
     a {
-        width: 40%;
-        min-width: 300px;
+        width: 300px;
+        max-width: 100%;
         display: block;
         padding: 1em;
         margin: 1em;
