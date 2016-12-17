@@ -37,18 +37,20 @@
                 {{template "sort" dict "sort" .sort "context" $}}
             {{end}}
 
-            {{if .recommendedPost}}
-                <h1>Recommended post</h1>
-                <div class="posts small">
-                    {{template "post_sidebar" dict "post" .recommendedPost}}
-                </div>
-            {{end}}
+            {{if or .recommendedPost .recommendedBlog}}
+                <h1>Recommended</h1>
 
-            {{if .recommendedBlog}}
-                <h1>Recommended blog</h1>
-                <ul class="blogs small">
-                    {{template "blog_sidebar" dict "blog" .recommendedBlog}}
-                </ul>
+                {{if .recommendedPost}}
+                    <div class="posts small">
+                        {{template "post_sidebar" dict "post" .recommendedPost}}
+                    </div>
+                {{end}}
+
+                {{if .recommendedBlog}}
+                    <ul class="blogs small">
+                        {{template "blog_sidebar" dict "blog" .recommendedBlog}}
+                    </ul>
+                {{end}}
             {{end}}
 
             <h1>New posts</h1>
