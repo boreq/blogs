@@ -428,3 +428,28 @@ footer {
         font-size: 50px;
     }
 }
+
+.choice-buttons {
+    text-align: center;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 20px;
+
+    a {
+        width: 40%;
+        min-width: 300px;
+        display: block;
+        padding: 1em;
+        margin: 1em;
+        border: 1px solid $border-gray;
+    }
+
+    a:hover {
+        color: #fff;
+        background-color: $primary-color;
+        text-decoration: none;
+        cursor: pointer;
+    }
+}
