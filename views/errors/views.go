@@ -23,12 +23,19 @@ func InternalServerErrorWithStack(w http.ResponseWriter, r *http.Request, err er
 }
 
 func InternalServerError(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			buf := bytes.NewBufferString(internalServerErrorResponse)
+			w.WriteHeader(500)
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			buf.WriteTo(w)
+		}
+		return
+
+	}()
 	err := displayErrorPage(500, "Internal Server Error", w, r)
 	if err != nil {
-		buf := bytes.NewBufferString(internalServerErrorResponse)
-		w.WriteHeader(500)
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		buf.WriteTo(w)
+		panic(err)
 	}
 }
 
