@@ -3,7 +3,7 @@
 function get {
     if [ ! -f "$1" ]; then
         echo "Downloading $1"
-        curl "$2" > "$1"
+        curl -L "$2" > "$1"
     fi
 }  
 
@@ -15,14 +15,20 @@ get _libs/jquery.timeago.js http://timeago.yarp.com/jquery.timeago.js
 get _libs/bootstrap.min.js https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js
 get _libs/bootstrap.min.css https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css
 get _libs/font-awesome-4.7.0.zip http://fontawesome.io/assets/font-awesome-4.7.0.zip
+get _libs/bootstrap-3.3.7.zip https://github.com/twbs/bootstrap/archive/v3.3.7.zip
 get _libs/Chart.bundle.min.js https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js
 
 if [ ! -d "_libs/font-awesome-4.7.0" ]; then
     unzip -d _libs _libs/font-awesome-4.7.0.zip
 fi
 
+if [ ! -d "_libs/bootstrap-3.3.7" ]; then
+    unzip -d _libs _libs/bootstrap-3.3.7.zip
+fi
+
 # Fonts
 rsync -r _libs/font-awesome-4.7.0/fonts/* _static/fonts/
+rsync -r _libs/bootstrap-3.3.7/fonts/* _static/fonts/
 
 # CSS
 cat _static/css/src/import.scss _libs/bootstrap.min.css _libs/font-awesome-4.7.0/css/font-awesome.min.css _static/css/src/style.scss \
