@@ -3,6 +3,7 @@ package blogs
 
 import (
 	"github.com/boreq/blogs/blogs/loaders"
+	"github.com/boreq/blogs/blogs/loaders/amirrachum"
 	"github.com/boreq/blogs/blogs/loaders/datarebellion"
 	"github.com/boreq/blogs/blogs/loaders/eevee"
 	"github.com/boreq/blogs/blogs/loaders/golang"
@@ -22,4 +23,5 @@ func init() {
 	Blogs[4] = datarebellion.New()
 	Blogs[5] = yegor256.New()
 	Blogs[6] = golang.New()
+	Blogs[7] = amirrachum.New()
 }
