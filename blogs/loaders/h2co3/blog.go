@@ -1,4 +1,4 @@
-package amirrachum
+package h2co3
 
 import (
 	"github.com/boreq/blogs/blogs/common"
@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-const domain = "amir.rachum.com"
-const homeURL = "http://amir.rachum.com/"
+const domain = "h2co3.org/blog"
+const homeURL = "http://h2co3.org/blog/"
 
 func New() loaders.Blog {
 	return common.NewLoader(domain,
@@ -25,17 +25,16 @@ func loadTitle() (string, error) {
 }
 
 func isArticleNode(n *html.Node) bool {
-	return htmlutils.IsHtmlNode(n, "li") &&
-		htmlutils.IsHtmlNode(n.Parent, "ul") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent, "section") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent.Parent, "main")
+	return htmlutils.IsHtmlNode(n, "header") &&
+		htmlutils.IsHtmlNode(n.Parent, "div") &&
+		htmlutils.IsHtmlNode(n.Parent.Parent, "div") &&
+		htmlutils.HasAttrVal(n.Parent.Parent, "id", "main")
 }
 
 func populatePost(n *html.Node, post *loaders.Post) {
 	// Id
 	if htmlutils.IsHtmlNode(n, "a") &&
-		htmlutils.IsHtmlNode(n.Parent, "div") &&
-		htmlutils.HasAttrVal(n.Parent, "class", "title") {
+		htmlutils.IsHtmlNode(n.Parent, "h1") {
 		if val, err := htmlutils.GetAttrVal(n, "href"); err == nil {
 			val = strings.TrimPrefix(val, "https://"+domain+"/")
 			val = strings.TrimPrefix(val, "http://"+domain+"/")
@@ -46,18 +45,20 @@ func populatePost(n *html.Node, post *loaders.Post) {
 
 	// Date
 	if htmlutils.IsTextNode(n) &&
-		htmlutils.IsHtmlNode(n.Parent, "span") &&
-		htmlutils.IsHtmlNode(n.Parent.Parent, "div") &&
-		htmlutils.HasAttrVal(n.Parent.Parent, "class", "post-date") {
-		if t, err := time.Parse("Jan 2, 2006", n.Data); err == nil {
-			post.Date = t
+		htmlutils.IsHtmlNode(n.Parent, "div") &&
+		htmlutils.HasAttrVal(n.Parent, "class", "post-meta") {
+		if strings.HasPrefix(n.Data, "On") {
+			val := strings.TrimSpace(strings.TrimPrefix(n.Data, "On"))
+			if t, err := time.Parse("2 Jan, 2006", val); err == nil {
+				post.Date = t
+			}
 		}
-
 	}
 
 	// Title
 	if htmlutils.IsTextNode(n) &&
-		htmlutils.IsHtmlNode(n.Parent, "a") {
+		htmlutils.IsHtmlNode(n.Parent, "a") &&
+		htmlutils.IsHtmlNode(n.Parent.Parent, "h1") {
 		post.Title = strings.TrimSpace(n.Data)
 	}
 }
