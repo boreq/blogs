@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/html"
 	"math/rand"
 	"net/http"
+	"strings"
 )
 
 // IoS
@@ -54,7 +55,7 @@ func LoadTitle(url string) (string, error) {
 		defer close(titleChan)
 		htmlutils.WalkAllNodes(doc, func(node *html.Node) {
 			if htmlutils.IsTextNode(node) && htmlutils.IsHtmlNode(node.Parent, "title") {
-				titleChan <- node.Data
+				titleChan <- strings.TrimSpace(node.Data)
 			}
 		})
 	}()
