@@ -1,6 +1,12 @@
 package commands
 
-import "github.com/boreq/guinea"
+import (
+	"fmt"
+	"github.com/boreq/guinea"
+)
+
+var buildCommit string
+var buildDate string
 
 var MainCmd = guinea.Command{
 	Options: []guinea.Option{
@@ -10,12 +16,7 @@ var MainCmd = guinea.Command{
 			Description: "Display version",
 		},
 	},
-	Run: func(c guinea.Context) error {
-		if c.Options["version"].Bool() {
-			return nil
-		}
-		return guinea.ErrInvalidParms
-	},
+	Run: runMain,
 	Subcommands: map[string]*guinea.Command{
 		"serve":          &serveCmd,
 		"update":         &updateCmd,
@@ -26,6 +27,14 @@ var MainCmd = guinea.Command{
 		"default_config": &defaultConfigCmd,
 	},
 	ShortDescription: "a blog aggregation platform",
-	Description: `Main command decription.
-Second line.`,
+	Description:      "A web-based blog aggregation platform.",
+}
+
+func runMain(c guinea.Context) error {
+	if c.Options["version"].Bool() {
+		fmt.Printf("BuildCommit %s\n", buildCommit)
+		fmt.Printf("BuildDate %s\n", buildDate)
+		return nil
+	}
+	return guinea.ErrInvalidParms
 }

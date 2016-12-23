@@ -1,3 +1,8 @@
+VERSION = `git rev-parse HEAD`
+DATE = `date --iso-8601=seconds`
+LDFLAGS =  -X github.com/boreq/blogs/main/commands.buildCommit=$(VERSION)
+LDFLAGS += -X github.com/boreq/blogs/main/commands.buildDate=$(DATE)
+
 all: build
 
 static:
@@ -5,7 +10,8 @@ static:
 
 build:
 	mkdir -p build
-	go build -o ./build/blogs ./main
+	go build -ldflags "$(LDFLAGS)" -o ./build/blogs ./main
+	
 
 run:
 	./main/main
