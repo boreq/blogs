@@ -11,7 +11,6 @@ static:
 build:
 	mkdir -p build
 	go build -ldflags "$(LDFLAGS)" -o ./build/blogs ./main
-	
 
 run:
 	./main/main
