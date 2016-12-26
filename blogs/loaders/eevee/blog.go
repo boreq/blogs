@@ -34,10 +34,7 @@ func populatePost(n *html.Node, post *loaders.Post) {
 	if htmlutils.IsHtmlNode(n, "a") &&
 		htmlutils.IsHtmlNode(n.Parent, "h1") {
 		if val, err := htmlutils.GetAttrVal(n, "href"); err == nil {
-			val = strings.TrimPrefix(val, "https://"+domain+"/")
-			val = strings.TrimPrefix(val, "http://"+domain+"/")
-			val = strings.Trim(val, "/")
-			post.Id = val
+			post.Id = common.CleanPostId(val, domain)
 		}
 	}
 

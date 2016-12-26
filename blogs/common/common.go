@@ -65,3 +65,10 @@ func LoadTitle(url string) (string, error) {
 	}
 	return title, nil
 }
+
+func CleanPostId(val, domain string) string {
+	val = strings.TrimPrefix(val, "https://"+domain+"/")
+	val = strings.TrimPrefix(val, "http://"+domain+"/")
+	val = strings.Trim(val, "/")
+	return val
+}
