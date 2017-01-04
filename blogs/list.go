@@ -10,6 +10,7 @@ import (
 	"github.com/boreq/blogs/blogs/loaders/h2co3"
 	"github.com/boreq/blogs/blogs/loaders/ilikebigbits"
 	"github.com/boreq/blogs/blogs/loaders/lucumr"
+	"github.com/boreq/blogs/blogs/loaders/peterbourgon"
 	"github.com/boreq/blogs/blogs/loaders/simblob"
 	"github.com/boreq/blogs/blogs/loaders/yegor256"
 )
@@ -28,4 +29,5 @@ func init() {
 	Blogs[7] = amirrachum.New()
 	Blogs[8] = h2co3.New()
 	Blogs[9] = simblob.New()
+	Blogs[10] = peterbourgon.New()
 }
