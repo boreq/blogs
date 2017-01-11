@@ -2,6 +2,7 @@
 package commands
 
 import (
+	"errors"
 	"github.com/boreq/blogs/config"
 	"github.com/boreq/blogs/database"
 )
@@ -11,10 +12,24 @@ func configInit(configFilename string) error {
 }
 
 func coreInit(configFilename string) error {
+	// Config
 	if err := configInit(configFilename); err != nil {
 		return err
 	}
-	if err := database.Init(database.SQLite3, config.Config.DatabaseURI); err != nil {
+
+	// Database
+	var dbType database.DatabaseType
+	switch config.Config.DatabaseType {
+	case "sqlite":
+		dbType = database.SQLite3
+		break
+	case "postgresql":
+		dbType = database.PostgreSQL
+		break
+	default:
+		return errors.New("The legal values for DatabaseType config key are: \"sqlite\", \"postgresql\"")
+	}
+	if err := database.Init(dbType, config.Config.DatabaseURI); err != nil {
 		return err
 	}
 	return nil
