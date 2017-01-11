@@ -39,6 +39,9 @@ type Pagination struct {
 func NewPagination(r *http.Request, allItems uint, itemsPerPage uint, preserveParams map[string]string) Pagination {
 	page := getPageNumber(r)
 	allPages := int(math.Ceil(float64(allItems) / float64(itemsPerPage)))
+	if allPages <= 0 {
+		allPages = 1
+	}
 	if page > allPages {
 		page = allPages
 	}
