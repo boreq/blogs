@@ -30,5 +30,5 @@ func runServe(c guinea.Context) error {
 	if err := initServe(c.Arguments[0]); err != nil {
 		return err
 	}
-	return http.ListenAndServe(":8080", handler.Get())
+	return http.ListenAndServe(config.Config.ServeAddress, handler.Get())
 }

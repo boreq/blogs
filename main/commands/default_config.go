@@ -43,7 +43,9 @@ StaticDirectory
 	relative to the cwd or absolute.
 	Allowed values: a string.
 
-
+ServeAddress
+	The server will listen on this address.
+	Allowed values: an address as defined by the Go standard library eg. ":8080".
 	`,
 }
 

@@ -12,6 +12,7 @@ type ConfigStruct struct {
 	DatabaseType       string
 	TemplatesDirectory string
 	StaticDirectory    string
+	ServeAddress       string
 }
 
 // Config points to the current config struct used by the other parts of the
@@ -26,6 +27,7 @@ func Default() *ConfigStruct {
 		DatabaseType:       "sqlite",
 		TemplatesDirectory: "_templates",
 		StaticDirectory:    "_static",
+		ServeAddress:       ":8080",
 	}
 	return conf
 }
