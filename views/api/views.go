@@ -6,6 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"sort"
+	"time"
 )
 
 type updatesChartResponse struct {
@@ -28,10 +29,11 @@ func (d byLabel) Less(i, j int) bool { return d[i].Label < d[j].Label }
 
 func updatesChart(r *http.Request, p httprouter.Params) (interface{}, api.Error) {
 	var updates []database.Update
+	t := time.Now().Add(-30 * 24 * time.Hour)
 	if err := database.DB.Select(&updates,
 		`SELECT "update".*
 		FROM "update"
-		WHERE started > (SELECT DATETIME('now', '-30 day'))`); err != nil {
+		WHERE started > $1`, t); err != nil {
 		return nil, api.InternalServerError
 	}
 

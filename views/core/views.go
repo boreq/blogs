@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/templates"
@@ -10,6 +11,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const postsPerPage = 20
@@ -138,18 +140,18 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN post_to_tag ON post_to_tag.post_id=post.id
 		JOIN tag ON post_to_tag.tag_id=tag.id
 		`
-		tagWhere := "WHERE tag.name=$2"
-		postsQuery = `
+		tagWhere := "WHERE tag.name=$1"
+		postsQuery = fmt.Sprintf(`
 		SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
-		` + tagJoin + `
-		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
-		` + tagWhere + `
-		GROUP BY post.id
-		ORDER BY ` + s.Query + `
-		LIMIT $3 OFFSET $4`
+		`+tagJoin+`
+		LEFT JOIN star ON star.post_id=post.id AND star.user_id=%d
+		`+tagWhere+`
+		GROUP BY post.id, category.id, blog.id, star.id
+		ORDER BY `+s.Query+`
+		LIMIT $2 OFFSET $3`, userId)
 		numPostsQuery = `SELECT COUNT(*) AS numPosts FROM post
 			JOIN category ON category.id = post.category_id
 			JOIN blog ON blog.id = category.blog_id
@@ -160,7 +162,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
 		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
-		GROUP BY post.id
+		GROUP BY post.id, category.id, blog.id, star.id
 		ORDER BY ` + s.Query + `
 		LIMIT $2 OFFSET $3`
 		numPostsQuery = "SELECT COUNT(*) AS numPosts FROM post"
@@ -190,7 +192,7 @@ func posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 	} else {
-		if err := database.DB.Select(&posts, postsQuery, userId, tag, p.Limit, p.Offset); err != nil {
+		if err := database.DB.Select(&posts, postsQuery, tag, p.Limit, p.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
 			return
 		}
@@ -242,7 +244,7 @@ func blogs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			JOIN category ON category.blog_id=blog.id
 			JOIN post ON post.category_id=category.id
 			LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
-			GROUP BY blog.id
+			GROUP BY blog.id, subscription.id
 			ORDER BY `+s.Query+`
 			LIMIT $2 OFFSET $3`, userId, p.Limit, p.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
@@ -320,7 +322,7 @@ func blog(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		JOIN blog ON blog.id = category.blog_id
 		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
 		WHERE blog.id=$2
-		GROUP BY post.id
+		GROUP BY post.id, category.id, blog.id, star.id
 		ORDER BY post.date DESC`, user_id, id)
 	if err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
@@ -364,7 +366,7 @@ func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 
 	var profile database.User
-	err = database.DB.Get(&profile, "SELECT * FROM user WHERE id=$1", userId)
+	err = database.DB.Get(&profile, "SELECT * FROM \"user\" WHERE id=$1", userId)
 	if err != nil {
 		if err == database.ErrNoRows {
 			verrors.NotFound(w, r)
@@ -380,8 +382,8 @@ func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		`SELECT COUNT(*) AS numPosts
 		FROM post
 		JOIN star ON star.post_id = post.id
-		JOIN user ON user.id = star.user_id
-		WHERE user.id=$1`, userId); err != nil {
+		JOIN "user" ON "user".id = star.user_id
+		WHERE "user".id=$1`, userId); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
@@ -393,8 +395,8 @@ func profile_stars(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
 		JOIN star ON star.post_id = post.id
-		JOIN user ON user.id = star.user_id
-		WHERE user.id=$1
+		JOIN "user" ON "user".id = star.user_id
+		WHERE "user".id=$1
 		LIMIT $2 OFFSET $3
 			`, userId, pagination.Limit, pagination.Offset); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
@@ -419,7 +421,7 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	var profile database.User
-	err = database.DB.Get(&profile, "SELECT * FROM user WHERE id=$1", userId)
+	err = database.DB.Get(&profile, "SELECT * FROM \"user\" WHERE id=$1", userId)
 	if err != nil {
 		if err == database.ErrNoRows {
 			verrors.NotFound(w, r)
@@ -435,8 +437,8 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 		`SELECT COUNT(*) AS numBlogs
 		FROM blog
 		JOIN subscription ON subscription.blog_id = blog.id
-		JOIN user ON user.id = subscription.user_id
-		WHERE user.id=$1`, userId); err != nil {
+		JOIN "user" ON "user".id = subscription.user_id
+		WHERE "user".id=$1`, userId); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
@@ -449,8 +451,9 @@ func profile_subscriptions(w http.ResponseWriter, r *http.Request, ps httprouter
 		JOIN category ON category.blog_id=blog.id
 		JOIN post ON post.category_id=category.id
 		JOIN subscription ON subscription.blog_id = blog.id
-		JOIN user ON user.id = subscription.user_id
-		WHERE user.id=$1
+		JOIN "user" ON "user".id = subscription.user_id
+		WHERE "user".id=$1
+		GROUP BY blog.id, subscription.id
 		LIMIT $2 OFFSET $3
 			`, userId, pagination.Limit, pagination.Offset); err != nil {
 			verrors.InternalServerErrorWithStack(w, r, err)
@@ -524,6 +527,8 @@ func explore(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 	}
 
+	t := time.Now().Add(-7 * 24 * time.Hour)
+
 	var popularBlogs []popularBlogsResult
 	if err := database.DB.Select(&popularBlogs,
 		`SELECT blog.*, MAX(post.date) AS updated, sa.id AS subscribed, COUNT(sb.id) AS score
@@ -531,10 +536,10 @@ func explore(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN category ON category.blog_id=blog.id
 		JOIN post ON post.category_id=category.id
 		LEFT JOIN subscription sa ON sa.blog_id=blog.id AND sa.user_id=$1
-		LEFT JOIN subscription sb ON sb.blog_id=blog.id AND sb.date > (SELECT DATETIME('now', '-7 day'))
-		GROUP BY blog.id
+		LEFT JOIN subscription sb ON sb.blog_id=blog.id AND sb.date > $2
+		GROUP BY blog.id, sa.id, category.id
 		ORDER BY score DESC
-		LIMIT 5`, userId); err != nil {
+		LIMIT 5`, userId, t); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}
@@ -546,10 +551,10 @@ func explore(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		JOIN category ON category.id = post.category_id
 		JOIN blog ON blog.id = category.blog_id
 		LEFT JOIN star sa ON sa.post_id = post.id AND sa.user_id = $1
-		LEFT JOIN star sb ON sb.post_id = post.id AND sb.date > (SELECT DATETIME('now', '-7 day'))
-		GROUP BY post.id
+		LEFT JOIN star sb ON sb.post_id = post.id AND sb.date > $2
+		GROUP BY post.id, sa.id, category.id, blog.id
 		ORDER BY score DESC
-		LIMIT 5`, userId); err != nil {
+		LIMIT 5`, userId, t); err != nil {
 		verrors.InternalServerErrorWithStack(w, r, err)
 		return
 	}

@@ -58,15 +58,18 @@ type scannableTime struct {
 }
 
 func (t *scannableTime) Scan(src interface{}) error {
-	updated, ok := src.([]uint8)
-	if !ok {
-		return errors.New("Invalid type, this is not []uint8")
+	switch src := src.(type) {
+	case time.Time:
+		t.Time = src
+	case []uint8:
+		tmp, err := time.Parse("2006-01-02 15:04:05-07:00", string(src))
+		if err != nil {
+			return err
+		}
+		t.Time = tmp
+	default:
+		return errors.New("Invalid type in Scan")
 	}
-	tmp, err := time.Parse("2006-01-02 15:04:05-07:00", string(updated))
-	if err != nil {
-		return err
-	}
-	t.Time = tmp
 	return nil
 }
 

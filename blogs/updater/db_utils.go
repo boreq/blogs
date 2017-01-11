@@ -25,8 +25,14 @@ func getBlog(internalID uint) (database.Blog, error) {
 
 func getCategory(tx *sqlx.Tx, blog database.Blog, name string) (database.Category, error) {
 	_, err := tx.Exec(
-		"INSERT INTO category (blog_id, name) VALUES ($1, $2)",
-		blog.ID, name)
+		`INSERT INTO category (blog_id, name)
+		SELECT $1, $2
+		WHERE NOT EXISTS (
+		    SELECT 1
+		    FROM category
+		    WHERE blog_id=$3 AND name=$4
+		)`,
+		blog.ID, name, blog.ID, name)
 	if err != nil && !isUniqueConstraintError(err) {
 		log.Printf("getCategory, error: %s", err.Error())
 	}
@@ -64,7 +70,16 @@ func getTags(post database.Post) ([]database.Tag, error) {
 }
 
 func getTag(name string) (database.Tag, error) {
-	_, err := database.DB.Exec("INSERT INTO tag (name) VALUES ($1)", name)
+	_, err := database.DB.Exec(`
+		INSERT INTO tag (name)
+		SELECT $1
+		WHERE NOT EXISTS (
+		    SELECT 1
+		    FROM tag
+		    WHERE name=$2
+		)
+	`, name, name)
+
 	if err != nil && !isUniqueConstraintError(err) {
 		log.Printf("getTag, error: %s", err.Error())
 	}

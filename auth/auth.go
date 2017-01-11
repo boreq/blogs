@@ -88,7 +88,7 @@ func getUserSession(r *http.Request) *userSession {
 	if err := database.DB.Get(session,
 		`SELECT u.*, us.*
 		FROM user_session us
-		JOIN user u ON us.user_id=u.id
+		JOIN "user" u ON us.user_id=u.id
 		WHERE us.key=$1
 		LIMIT 1`,
 		sessionCookie.Value); err != nil {
@@ -100,7 +100,7 @@ func getUserSession(r *http.Request) *userSession {
 func getUser(username, password string) *database.User {
 	user := &database.User{}
 	if err := database.DB.
-		Get(user, "SELECT * FROM user WHERE username=$1 LIMIT 1", username); err != nil {
+		Get(user, "SELECT * FROM \"user\" WHERE username=$1 LIMIT 1", username); err != nil {
 		return nil
 	}
 	if !compareHashAndPassword(user.Password, password) {
@@ -143,7 +143,7 @@ func CreateUser(username, password string) error {
 			return err
 		}
 		if _, err := database.DB.Exec(
-			"INSERT INTO user (username, password) VALUES ($1, $2)",
+			"INSERT INTO \"user\" (username, password) VALUES ($1, $2)",
 			username, passwordHash); err != nil {
 			return err
 		}
@@ -153,7 +153,7 @@ func CreateUser(username, password string) error {
 
 func usernameTaken(username string) bool {
 	var user database.User
-	err := database.DB.Get(&user, "SELECT * FROM user WHERE username=$1", username)
+	err := database.DB.Get(&user, "SELECT * FROM \"user\" WHERE username=$1", username)
 	return err == nil
 }
 

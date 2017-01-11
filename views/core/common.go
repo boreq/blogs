@@ -19,12 +19,12 @@ func getRecommendedBlogs(userId uint, limit uint) ([]popularBlogsResult, error) 
 			WHERE s.blog_id IN (
 				SELECT s.blog_id
 				FROM subscription s
-				JOIN user u ON u.id=s.user_id
+				JOIN "user" u ON u.id=s.user_id
 				WHERE u.id=$1
 			)
 		)
 		AND sa.id IS NULL
-		GROUP BY b.id
+		GROUP BY b.id, sa.id, c.id
 		ORDER BY score DESC
 		LIMIT 5`, userId); err != nil {
 		return nil, err
@@ -47,12 +47,12 @@ func getRecommendedPosts(userId uint, limit uint) ([]popularPostsResult, error) 
 			WHERE s.post_id IN (
 				SELECT s.post_id
 				FROM star s
-				JOIN user u ON u.id=s.user_id
+				JOIN "user" u ON u.id=s.user_id
 				WHERE u.id=$1
 			)
 		)
 		AND sa.id IS NULL
-		GROUP BY p.id
+		GROUP BY p.id, sa.id, c.id, b.id
 		ORDER BY score DESC
 		LIMIT 5`, userId); err != nil {
 		return nil, err
