@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/boreq/blogs/logging"
 	"github.com/boreq/sqlx"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,6 +21,7 @@ const (
 
 // DB becomes initialized after calling Init.
 var DB *sqlx.DB
+var dbType DatabaseType
 
 // ErrNoRows lets the user access sql.ErrNoRows without importing database/sql.
 var ErrNoRows = sql.ErrNoRows
@@ -41,21 +43,38 @@ var createTableQueries = []string{
 	createDeleteSubscriptionTriggerSQL,
 }
 
+var createTableQueriesPostgreSQL = []string{
+	createUserSQL,
+	createUserSessionSQL,
+	createBlogSQL,
+	createCategorySQL,
+	createPostSQL,
+	createTagSQL,
+	createPostToTagSQL,
+	createUpdateSQL,
+	createSubscriptionSQL,
+	createStarSQL,
+	triggersPostgreSQL,
+}
+
 var tableNames = []string{
+	"subscription",
+	"star",
 	"user_session",
 	"user",
-	"post",
 	"post_to_tag",
+	"post",
 	"tag",
 	"update",
 	"category",
 	"blog",
-	"subscription",
-	"star",
 }
+
+var log = logging.GetLogger("database")
 
 // Init connects to the specified database.
 func Init(databaseType DatabaseType, params string) (err error) {
+	dbType = databaseType
 	switch databaseType {
 	case SQLite3:
 		DB, err = sqlx.Connect("sqlite3", params)
@@ -78,7 +97,15 @@ func Init(databaseType DatabaseType, params string) (err error) {
 
 // CreateTables creates database tables.
 func CreateTables() error {
-	for _, query := range createTableQueries {
+	var queries []string
+	if dbType == SQLite3 {
+		queries = createTableQueries
+	} else {
+		queries = createTableQueriesPostgreSQL
+	}
+	for _, query := range queries {
+		query = fixQuery(query)
+		log.Debugf("Running: %s", query)
 		if _, err := DB.Exec(query); err != nil {
 			return err
 		}
@@ -90,6 +117,7 @@ func CreateTables() error {
 func DropTables() error {
 	for _, tableName := range tableNames {
 		query := fmt.Sprintf("DROP TABLE IF EXISTS \"%s\"", tableName)
+		log.Debugf("Running: %s", query)
 		if _, err := DB.Exec(query); err != nil {
 			return err
 		}
@@ -106,4 +134,13 @@ func mapperFunc(fieldName string) string {
 		result += strings.ToLower(string(ch))
 	}
 	return result
+}
+
+func fixQuery(query string) string {
+	if dbType == PostgreSQL {
+		query = strings.Replace(query, "INTEGER PRIMARY KEY", "SERIAL PRIMARY KEY", -1)
+		query = strings.Replace(query, "DATETIME", "TIMESTAMP WITH TIME ZONE", -1)
+		query = strings.Replace(query, "user(id)", "\"user\" (id)", -1)
+	}
+	return query
 }

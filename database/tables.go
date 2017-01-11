@@ -152,3 +152,52 @@ BEGIN
 	UPDATE post SET stars=((SELECT stars FROM post WHERE post.id=old.post_id)-1) WHERE post.id=old.post_id;
 END;
 `
+
+var triggersPostgreSQL = `
+DROP FUNCTION IF EXISTS update_subscriptions_insert();
+CREATE FUNCTION update_subscriptions_insert() RETURNS trigger AS $update_subscriptions_insert$
+    BEGIN
+	UPDATE blog SET subscriptions=((SELECT subscriptions FROM blog WHERE blog.id=NEW.blog_id)+1) WHERE blog.id=NEW.blog_id;
+        RETURN NEW;
+    END;
+$update_subscriptions_insert$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_subscriptions_insert AFTER INSERT ON subscription 
+	FOR EACH ROW EXECUTE PROCEDURE update_subscriptions_insert();
+
+
+DROP FUNCTION IF EXISTS update_subscriptions_delete();
+CREATE FUNCTION update_subscriptions_delete() RETURNS trigger AS $update_subscriptions_delete$
+    BEGIN
+	UPDATE blog SET subscriptions=((SELECT subscriptions FROM blog WHERE blog.id=OLD.blog_id)-1) WHERE blog.id=OLD.blog_id;
+        RETURN OLD;
+    END;
+$update_subscriptions_delete$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_subscriptions_delete AFTER DELETE ON subscription 
+	FOR EACH ROW EXECUTE PROCEDURE update_subscriptions_delete();
+
+
+DROP FUNCTION IF EXISTS update_stars_insert();
+CREATE FUNCTION update_stars_insert() RETURNS trigger AS $update_stars_insert$
+    BEGIN
+	UPDATE post SET stars=((SELECT stars FROM post WHERE post.id=NEW.post_id)+1) WHERE post.id=NEW.post_id;
+        RETURN NEW;
+    END;
+$update_stars_insert$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_stars_insert AFTER INSERT ON star 
+	FOR EACH ROW EXECUTE PROCEDURE update_stars_insert();
+
+
+DROP FUNCTION IF EXISTS update_stars_delete();
+CREATE FUNCTION update_stars_delete() RETURNS trigger AS $update_stars_delete$
+    BEGIN
+	UPDATE post SET stars=((SELECT stars FROM post WHERE post.id=OLD.post_id)-1) WHERE post.id=OLD.post_id;
+        RETURN OLD;
+    END;
+$update_stars_delete$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_stars_delete AFTER DELETE ON star 
+	FOR EACH ROW EXECUTE PROCEDURE update_stars_delete();
+`
