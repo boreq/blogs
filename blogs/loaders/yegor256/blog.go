@@ -27,8 +27,7 @@ func loadTitle() (string, error) {
 
 func isArticleNode(n *html.Node) bool {
 	return htmlutils.IsHtmlNode(n, "div") &&
-		htmlutils.HasAttrVal(n.Parent, "itemprop", "articleBody") &&
-		htmlutils.HasAttrVal(n.Parent, "class", "main")
+		htmlutils.HasAttrVal(n.Parent, "id", "all")
 }
 
 func populatePost(n *html.Node, post *loaders.Post) {
