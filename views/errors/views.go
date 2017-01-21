@@ -46,6 +46,7 @@ func displayErrorPageOrInternalServerError(code int, message string, w http.Resp
 }
 
 func displayErrorPage(code int, message string, w http.ResponseWriter, r *http.Request) error {
+	w.WriteHeader(code)
 	var data = templates.GetDefaultData(r)
 	data["error_code"] = code
 	data["error_message"] = message
