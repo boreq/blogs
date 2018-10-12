@@ -17,9 +17,9 @@ var UsernameTakenError = errors.New("Username is already taken")
 var InvalidUsernameOrPasswordError = errors.New("Invalid username or password")
 
 var changeUsernameMutex sync.Mutex
-var log = logging.GetLogger("auth")
+var log = logging.New("auth")
 
-const SessionKeyCookieName = "session_key"
+const AuthorizationHeader = "Authorization"
 const sessionKeySize = 256
 const bcryptCost = 10
 
@@ -44,7 +44,7 @@ func GetUser(r *http.Request) (User, error) {
 
 // LogoutUser logs out the current user. It is safe to call this function if
 // a user is not logged in.
-func LogoutUser(w http.ResponseWriter, r *http.Request) error {
+func LogoutUser(r *http.Request) error {
 	session := getUserSession(r)
 	if session != nil {
 		if _, err := database.DB.Exec(
@@ -53,25 +53,21 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 	}
-	cookie := &http.Cookie{Name: SessionKeyCookieName, MaxAge: -1}
-	http.SetCookie(w, cookie)
 	return nil
 }
 
 // LoginUser logs in a user. InvalidUsernameOrPasswordError is returned if the
 // username or password is incorrect.
-func LoginUser(username, password string, w http.ResponseWriter) error {
+func LoginUser(username, password string) (*database.User, string, error) {
 	user := getUser(username, password)
 	if user == nil {
-		return InvalidUsernameOrPasswordError
+		return nil, "", InvalidUsernameOrPasswordError
 	}
 	sessionKey, err := createUserSession(*user)
 	if err != nil {
-		return err
+		return nil, "", err
 	}
-	cookie := &http.Cookie{Name: SessionKeyCookieName, Value: sessionKey}
-	http.SetCookie(w, cookie)
-	return nil
+	return user, sessionKey, nil
 }
 
 type userSession struct {
@@ -80,8 +76,8 @@ type userSession struct {
 }
 
 func getUserSession(r *http.Request) *userSession {
-	sessionCookie, err := r.Cookie(SessionKeyCookieName)
-	if err != nil {
+	token := r.Header.Get(AuthorizationHeader)
+	if token == "" {
 		return nil
 	}
 	session := &userSession{}
@@ -91,7 +87,7 @@ func getUserSession(r *http.Request) *userSession {
 		JOIN "user" u ON us.user_id=u.id
 		WHERE us.key=$1
 		LIMIT 1`,
-		sessionCookie.Value); err != nil {
+		token); err != nil {
 		return nil
 	}
 	return session

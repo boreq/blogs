@@ -70,7 +70,7 @@ var tableNames = []string{
 	"blog",
 }
 
-var log = logging.GetLogger("database")
+var log = logging.New("database")
 
 // Init connects to the specified database.
 func Init(databaseType DatabaseType, params string) (err error) {
@@ -105,7 +105,7 @@ func CreateTables() error {
 	}
 	for _, query := range queries {
 		query = fixQuery(query)
-		log.Debugf("Running: %s", query)
+		log.Debug("Running query", "query", query)
 		if _, err := DB.Exec(query); err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func CreateTables() error {
 func DropTables() error {
 	for _, tableName := range tableNames {
 		query := fmt.Sprintf("DROP TABLE IF EXISTS \"%s\"", tableName)
-		log.Debugf("Running: %s", query)
+		log.Debug("Running query", "query", query)
 		if _, err := DB.Exec(query); err != nil {
 			return err
 		}

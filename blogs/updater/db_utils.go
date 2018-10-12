@@ -14,7 +14,7 @@ func getBlog(internalID uint) (database.Blog, error) {
 		"INSERT INTO blog (internal_id, title) VALUES (:internal_id, :title)",
 		&database.Blog{InternalID: internalID, Title: ""})
 	if err != nil && !isUniqueConstraintError(err) {
-		log.Printf("getBlog, error: %s", err.Error())
+		log.Error("getBlog, error", "error", err.Error())
 	}
 	blog := database.Blog{}
 	err = database.DB.Get(&blog,
@@ -34,7 +34,7 @@ func getCategory(tx *sqlx.Tx, blog database.Blog, name string) (database.Categor
 		)`,
 		blog.ID, name, blog.ID, name)
 	if err != nil && !isUniqueConstraintError(err) {
-		log.Printf("getCategory, error: %s", err.Error())
+		log.Error("getCategory, error", "error", err.Error())
 	}
 	category := database.Category{}
 	err = tx.Get(&category,
@@ -49,7 +49,7 @@ func getPost(tx *sqlx.Tx, category database.Category, internalID string) (databa
 		VALUES ($1, $2, $3, $4, $5)`,
 		category.ID, internalID, "", "", time.Time{})
 	if err != nil && !isUniqueConstraintError(err) {
-		log.Printf("getPost, error: %s", err.Error())
+		log.Error("getPost, error", "error", err.Error())
 	}
 	post := database.Post{}
 	err = tx.Get(&post,
@@ -81,7 +81,7 @@ func getTag(name string) (database.Tag, error) {
 	`, name, name)
 
 	if err != nil && !isUniqueConstraintError(err) {
-		log.Printf("getTag, error: %s", err.Error())
+		log.Error("getTag, error", "error", err.Error())
 	}
 	tag := database.Tag{}
 	err = database.DB.Get(&tag, "SELECT * FROM tag WHERE name=$1 LIMIT 1", name)

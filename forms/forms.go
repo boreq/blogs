@@ -1,12 +1,14 @@
 package forms
 
 import (
+	"encoding/json"
 	"errors"
+	"net/http"
 )
 
 // GetFormValue is used to load parameters into the form. Usually this will
 // simply be an http.Request.FormValue.
-type GetFormValue func(string) string
+type GetFormValue func(fieldName string) string
 
 // FormValidator can validate multiple form fields or generate errors which
 // are not related to any fields. FormValidator can attach errors to a form
@@ -67,4 +69,16 @@ func (f *Form) GetValue(fieldName string) (string, error) {
 		}
 	}
 	return "", errors.New("Field not found")
+}
+
+func GetJsonFormValue(r *http.Request) (GetFormValue, error) {
+	decoder := json.NewDecoder(r.Body)
+	m := make(map[string]string)
+	err := decoder.Decode(&m)
+	if err != nil {
+		return nil, err
+	}
+	return func(fieldName string) string {
+		return m[fieldName]
+	}, nil
 }

@@ -2,19 +2,28 @@ package handler
 
 import (
 	bhttp "github.com/boreq/blogs/http"
+	"github.com/boreq/blogs/http/api"
 	"github.com/boreq/blogs/http/context"
-	"github.com/boreq/blogs/views"
-	"github.com/boreq/blogs/views/errors"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"net/http"
 )
 
+type Registerer interface {
+	Register(router *httprouter.Router)
+}
+
 // Get returns the http handler used by the blogs server.
-func Get() http.Handler {
+func Get(registerers []Registerer) http.Handler {
 	router := httprouter.New()
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		errors.NotFound(w, r)
+		api.Call(w, r, nil, func(r *http.Request, p httprouter.Params) (api.Response, api.Error) {
+			return nil, api.NotFoundError
+		})
 	})
-	views.Register(router)
-	return bhttp.RecoverHandler(context.ClearContext(router))
+	for _, registerer := range registerers {
+		registerer.Register(router)
+	}
+	c := cors.AllowAll()
+	return c.Handler(bhttp.RecoverHandler(context.ClearContext(router)))
 }

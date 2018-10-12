@@ -253,6 +253,8 @@ func (u *blogUpdater) findLoadedTag(name string, tags []string) bool {
 	return false
 }
 
-func (u *blogUpdater) log(format string, v ...interface{}) {
-	log.Printf(u.loader.GetUrl()+": "+format, v...)
+func (u *blogUpdater) log(message string, v ...interface{}) {
+	v = append(v, "url")
+	v = append(v, u.loader.GetUrl())
+	log.Error(message, v...)
 }

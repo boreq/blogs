@@ -35,7 +35,7 @@ func NewPaginatedLoader(domain string, homeURL string, loadTitle LoadTitleFunc, 
 		populatePost:   populatePost,
 		isNextPageLink: isNextPageLink,
 		getNextPageURL: getNextPageURL,
-		log:            logging.GetLogger(domain),
+		log:            logging.New(domain),
 	}
 	return rv
 }
@@ -64,7 +64,7 @@ func NewLoader(domain string, homeURL string, loadTitle LoadTitleFunc, isArticle
 		populatePost:   populatePost,
 		isNextPageLink: isNextPageLink,
 		getNextPageURL: getNextPageURL,
-		log:            logging.GetLogger(domain),
+		log:            logging.New(domain),
 	}
 	return rv
 }
@@ -140,7 +140,7 @@ func (l loader) yieldPosts(postChan chan<- loaders.Post, errorChan chan<- error)
 }
 
 func (l loader) startPageWorker(url string, postChan chan<- loaders.Post, errorChan chan<- error, wg *sync.WaitGroup) {
-	l.log.Debugf("Starting a page worker for %s", url)
+	l.log.Debug("Starting a page worker", "url", url)
 	wg.Add(1)
 	go l.pageWorker(url, postChan, errorChan, wg)
 }

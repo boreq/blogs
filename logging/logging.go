@@ -1,33 +1,32 @@
 package logging
 
 import (
-	"github.com/boreq/blogs/config"
-	"log"
-	"os"
+	"github.com/inconshreveable/log15"
 )
 
-// Logger defines methods used for logging in normal mode and debug mode. Debug
-// mode log messages are displayed only if a proper field is set in the config.
-type Logger interface {
-	Print(...interface{})
-	Printf(string, ...interface{})
-	Debug(...interface{})
-	Debugf(string, ...interface{})
-}
+type Logger = log15.Logger
 
-var debug *bool
-var loggers map[string]Logger
+type Level = log15.Lvl
+
+var maxLevel *Level
 
 func init() {
-	loggers = make(map[string]Logger)
-	debug = &config.Config.Debug
+	level := log15.LvlDebug
+	maxLevel = &level
 }
 
-// GetLogger creates a new logger or returns an already existing logger created
-// with the given name using this method.
-func GetLogger(name string) Logger {
-	if _, ok := loggers[name]; !ok {
-		loggers[name] = &logger{log.New(os.Stdout, name+": ", 0)}
-	}
-	return loggers[name]
+func New(name string) Logger {
+	log := log15.New("source", name)
+	log.SetHandler(log15.FilterHandler(func(r *log15.Record) (pass bool) {
+		return r.Lvl <= *maxLevel
+	}, log15.StdoutHandler))
+	return log
+}
+
+func SetLoggingLevel(level Level) {
+	maxLevel = &level
+}
+
+func LevelFromString(s string) (Level, error) {
+	return log15.LvlFromString(s)
 }

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var log = logging.GetLogger("updater")
+var log = logging.New("updater")
 
 // Update performs an update of all defined blogs.
 func Update() error {
@@ -45,7 +45,7 @@ func TestLoader(internalID uint) error {
 	start := time.Now()
 	title, err := loader.LoadTitle()
 	if err != nil {
-		log.Printf("Error: %s", err)
+		log.Error("Error", "err", err)
 		numErrors++
 	}
 	posts, errors := loader.LoadPosts()
@@ -53,14 +53,14 @@ func TestLoader(internalID uint) error {
 		select {
 		case err, ok := <-errors:
 			if ok {
-				log.Printf("Error: %s", err)
+				log.Error("Error", "err", err)
 				numErrors++
 			} else {
 				errors = nil
 			}
 		case post, ok := <-posts:
 			if ok {
-				log.Printf("Post: %s", postToString(post))
+				log.Info("Post", "post", postToString(post))
 				numPosts++
 			} else {
 				posts = nil
@@ -72,10 +72,10 @@ func TestLoader(internalID uint) error {
 	}
 	elapsed := time.Since(start)
 
-	log.Printf("Title: %s", title)
-	log.Printf("Errors: %d", numErrors)
-	log.Printf("Posts: %d", numPosts)
-	log.Printf("Elapsed: %s", elapsed)
+	log.Info("Title", "title", title)
+	log.Info("Errors", "errors", numErrors)
+	log.Info("Posts", "posts", numPosts)
+	log.Info("Elapsed", "elapsed", elapsed)
 	return nil
 }
 

@@ -10,7 +10,7 @@ func MaxLength(maxLength int) Validator {
 	return func(v string) []string {
 		var errors []string
 		if len(v) > maxLength {
-			err := fmt.Sprintf("Max length of this field is %d", maxLength)
+			err := fmt.Sprintf("Max length of this field is %d.", maxLength)
 			errors = append(errors, err)
 		}
 		return errors
@@ -22,7 +22,7 @@ func MinLength(minLength int) Validator {
 	return func(v string) []string {
 		var errors []string
 		if len(v) < minLength {
-			err := fmt.Sprintf("Min length of this field is %d", minLength)
+			err := fmt.Sprintf("Min length of this field is %d.", minLength)
 			errors = append(errors, err)
 		}
 		return errors
@@ -35,7 +35,7 @@ func Regexp(regExp string) Validator {
 	return func(v string) []string {
 		var errors []string
 		if !r.MatchString(v) {
-			err := fmt.Sprintf("Allowed characters %s", regExp)
+			err := fmt.Sprintf("Allowed characters %s.", regExp)
 			errors = append(errors, err)
 		}
 		return errors

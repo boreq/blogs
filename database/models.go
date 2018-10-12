@@ -8,10 +8,10 @@ import (
 )
 
 type User struct {
-	ID uint
+	ID uint `json:"id"`
 
-	Username string
-	Password string
+	Username string `json:"username"`
+	Password string `json:"-"`
 }
 
 type UserSession struct {
@@ -23,11 +23,11 @@ type UserSession struct {
 }
 
 type Blog struct {
-	ID uint
+	ID uint `json:"id"`
 
-	InternalID    uint
-	Title         string
-	Subscriptions int
+	InternalID    uint   `json:"-"`
+	Title         string `json:"title"`
+	Subscriptions int    `json:"subscriptions"`
 }
 
 // GetUrl returns the address of the blog. The address doesn't contain the

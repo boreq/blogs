@@ -2,8 +2,11 @@ package commands
 
 import (
 	"github.com/boreq/blogs/config"
+	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/http/handler"
-	"github.com/boreq/blogs/templates"
+	blogsService "github.com/boreq/blogs/service/blogs"
+	"github.com/boreq/blogs/views/auth"
+	"github.com/boreq/blogs/views/blogs"
 	"github.com/boreq/guinea"
 	"net/http"
 )
@@ -20,9 +23,6 @@ func initServe(configFilename string) error {
 	if err := coreInit(configFilename); err != nil {
 		return err
 	}
-	if err := templates.Load(config.Config.TemplatesDirectory); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -30,5 +30,16 @@ func runServe(c guinea.Context) error {
 	if err := initServe(c.Arguments[0]); err != nil {
 		return err
 	}
-	return http.ListenAndServe(config.Config.ServeAddress, handler.Get())
+
+	blogsService := blogsService.New(database.DB)
+
+	blogs := blogs.New("/blogs", blogsService)
+	auth := auth.New("/auth")
+
+	registerers := []handler.Registerer{
+		blogs,
+		auth,
+	}
+
+	return http.ListenAndServe(config.Config.ServeAddress, handler.Get(registerers))
 }

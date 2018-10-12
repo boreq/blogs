@@ -34,7 +34,7 @@ func makeRegisterForm() (forms.Form, forms.Field, forms.Field) {
 	usernameField, passwordField := makeUsernameAndPasswordFields()
 
 	passwordConfirmField := forms.ToPasswordField(&forms.TextField{
-		Name:     "password_confirm",
+		Name:     "confirm_password",
 		Label:    "Confirm password:",
 		HelpText: "Confirm your password.",
 	})

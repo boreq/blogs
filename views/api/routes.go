@@ -6,7 +6,7 @@ import (
 )
 
 func Register(router *httprouter.Router) {
-	router.GET("/api/updates/chart.json", api.Wrap(updatesChart))
+	//	router.GET("/api/updates/chart.json", api.Wrap(updatesChart))
 
 	// Star, unstar
 	router.POST("/nojs/post/star", star)
