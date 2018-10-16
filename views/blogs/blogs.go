@@ -2,6 +2,7 @@ package blogs
 
 import (
 	"github.com/boreq/blogs/http/api"
+	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
 	"github.com/boreq/blogs/service/blogs"
 	"github.com/boreq/blogs/views"
@@ -39,7 +40,12 @@ func (b *Blogs) list(r *http.Request, p httprouter.Params) (api.Response, api.Er
 	if !ok {
 		sort = blogs.SortTitle
 	}
-	blogs, err := b.BlogsService.List(page, sort, reverse)
+	var userId *uint = nil
+	ctx := context.Get(r)
+	if ctx.User.IsAuthenticated() {
+		userId = &ctx.User.GetUser().ID
+	}
+	blogs, err := b.BlogsService.List(page, sort, reverse, userId)
 	if err != nil {
 		log.Error("list error", "err", err)
 		return nil, api.InternalServerError

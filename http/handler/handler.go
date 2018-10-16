@@ -13,8 +13,8 @@ type Registerer interface {
 	Register(router *httprouter.Router)
 }
 
-// Get returns the http handler used by the blogs server.
-func Get(registerers []Registerer) http.Handler {
+// New returns the http handler used by the blogs server.
+func New(registerers []Registerer) http.Handler {
 	router := httprouter.New()
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		api.Call(w, r, nil, func(r *http.Request, p httprouter.Params) (api.Response, api.Error) {

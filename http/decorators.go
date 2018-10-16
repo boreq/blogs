@@ -1,31 +1,20 @@
 package http
 
 import (
+	"github.com/boreq/blogs/http/api"
 	"github.com/boreq/blogs/http/context"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-// NotAuthenticatedOnly redirects authenticated users to the home page.
-func NotAuthenticatedOnly(h httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ctx := context.Get(r)
-		if ctx.User.IsAuthenticated() {
-			Redirect(w, r, "/")
-			return
-		}
-		h(w, r, p)
-	}
-}
-
-// AuthenticatedOnly redirects not authenticated users to the home page.
-func AuthenticatedOnly(h httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+// AuthenticatedOnly returns an UnauthorizedError if the user is unauthorized
+// thereby from accessing the wrapped handle.
+func AuthenticatedOnly(handle api.Handle) api.Handle {
+	return func(r *http.Request, p httprouter.Params) (api.Response, api.Error) {
 		ctx := context.Get(r)
 		if !ctx.User.IsAuthenticated() {
-			Redirect(w, r, "/")
-			return
+			return nil, api.UnauthorizedError
 		}
-		h(w, r, p)
+		return handle(r, p)
 	}
 }

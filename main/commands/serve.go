@@ -4,8 +4,10 @@ import (
 	"github.com/boreq/blogs/config"
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/http/handler"
+	blogService "github.com/boreq/blogs/service/blog"
 	blogsService "github.com/boreq/blogs/service/blogs"
 	"github.com/boreq/blogs/views/auth"
+	"github.com/boreq/blogs/views/blog"
 	"github.com/boreq/blogs/views/blogs"
 	"github.com/boreq/guinea"
 	"net/http"
@@ -32,14 +34,17 @@ func runServe(c guinea.Context) error {
 	}
 
 	blogsService := blogsService.New(database.DB)
+	blogService := blogService.New(database.DB)
 
 	blogs := blogs.New("/blogs", blogsService)
+	blog := blog.New("/blog", blogService)
 	auth := auth.New("/auth")
 
 	registerers := []handler.Registerer{
 		blogs,
+		blog,
 		auth,
 	}
 
-	return http.ListenAndServe(config.Config.ServeAddress, handler.Get(registerers))
+	return http.ListenAndServe(config.Config.ServeAddress, handler.New(registerers))
 }

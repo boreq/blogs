@@ -36,13 +36,12 @@ type blogResult struct {
 
 type ListSort string
 
-func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool) (ListOut, error) {
+func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *uint) (ListOut, error) {
 	var amount uint
 	if err := b.db.Get(&amount, "SELECT COUNT(*) AS amount FROM blog"); err != nil {
 		return ListOut{}, errors.Wrap(err, "could not count the blogs")
 	}
 
-	var userId *int = nil // TODO
 	limit, offset := limitOffset(page)
 
 	var blogs []blogResult
