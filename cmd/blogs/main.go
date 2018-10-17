@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	e := guinea.Run(&commands.MainCmd)
-	if e != nil {
-		fmt.Fprintln(os.Stderr, e)
+	err := guinea.Run(&commands.MainCmd)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
