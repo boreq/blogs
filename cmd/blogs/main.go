@@ -3,7 +3,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/boreq/blogs/main/commands"
+	"github.com/boreq/blogs/cmd/blogs/commands"
 	"github.com/boreq/guinea"
 	"os"
 )
