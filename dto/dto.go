@@ -49,5 +49,7 @@ func (t ScannableTime) String() string {
 type BlogOut struct {
 	database.Blog
 	LastPost   *ScannableTime `json:"lastPost,omitempty"`
-	Subscribed *bool          `json:"subscribed,omitempty"`
+	Url        string         `json:"url"`
+	CleanUrl   string         `json:"cleanUrl"`
+	Subscribed bool           `json:"subscribed"`
 }

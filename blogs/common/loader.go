@@ -108,6 +108,10 @@ type loader struct {
 }
 
 func (l loader) GetUrl() string {
+	return l.homeURL
+}
+
+func (l loader) GetCleanUrl() string {
 	return l.domain
 }
 

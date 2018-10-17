@@ -28,13 +28,18 @@ const (
 	SortLastPost    ListSort = "last_post"
 )
 
+type ListSort string
+
 type blogResult struct {
 	database.Blog
 	LastPost   *dto.ScannableTime
 	Subscribed sql.NullInt64
 }
 
-type ListSort string
+type ListOut struct {
+	Page  dto.PageOut   `json:"page"`
+	Blogs []dto.BlogOut `json:"blogs"`
+}
 
 func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *uint) (ListOut, error) {
 	var amount uint
@@ -57,29 +62,42 @@ func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *
 		return ListOut{}, errors.Wrap(err, "could not get the blogs")
 	}
 
+	blogsOut, err := toBlogsOut(blogs)
+	if err != nil {
+		return ListOut{}, errors.Wrap(err, "could not convert to blogs out")
+	}
 	out := ListOut{
 		Page: dto.PageOut{
 			Page:     page,
 			AllItems: int(amount),
 		},
-		Blogs: toBlogsOut(blogs),
+		Blogs: blogsOut,
 	}
-
 	return out, nil
 }
 
-func toBlogsOut(blogResults []blogResult) []dto.BlogOut {
+func toBlogsOut(blogResults []blogResult) ([]dto.BlogOut, error) {
 	blogsOut := make([]dto.BlogOut, 0)
 	for _, blogResult := range blogResults {
 		subscribed := blogResult.Subscribed.Valid && blogResult.Subscribed.Int64 > 0
+		url, err := blogResult.Blog.GetUrl()
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the url for blog %+v", blogResult.Blog)
+		}
+		cleanUrl, err := blogResult.Blog.GetCleanUrl()
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the clean url for blog %+v", blogResult.Blog)
+		}
 		blogOut := dto.BlogOut{
 			Blog:       blogResult.Blog,
 			LastPost:   blogResult.LastPost,
-			Subscribed: &subscribed,
+			Subscribed: subscribed,
+			Url:        url,
+			CleanUrl:   cleanUrl,
 		}
 		blogsOut = append(blogsOut, blogOut)
 	}
-	return blogsOut
+	return blogsOut, nil
 }
 
 func order(reverse bool) string {

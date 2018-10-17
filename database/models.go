@@ -1,9 +1,8 @@
 package database
 
 import (
-	"fmt"
 	"github.com/boreq/blogs/blogs"
-	"github.com/boreq/blogs/utils"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -30,19 +29,23 @@ type Blog struct {
 	Subscriptions int    `json:"subscriptions"`
 }
 
-// GetUrl returns the address of the blog. The address doesn't contain the
-// scheme.
-func (blog Blog) GetUrl() string {
+// GetUrl returns the address of the blog.
+func (blog Blog) GetUrl() (string, error) {
 	loader, ok := blogs.Blogs[blog.InternalID]
 	if ok {
-		return loader.GetUrl()
+		return loader.GetUrl(), nil
 	}
-	return ""
+	return "", errors.New("loader could not be found for this blog")
 }
 
-// GetAbsoluteUrl returns an address of this blog's view.
-func (blog Blog) GetAbsoluteUrl() string {
-	return fmt.Sprintf("/blog/%d/%s", blog.ID, utils.Slugify(blog.Title))
+// GetCleanUrl returns the address of the blog which looks nice presented to
+// the user.
+func (blog Blog) GetCleanUrl() (string, error) {
+	loader, ok := blogs.Blogs[blog.InternalID]
+	if ok {
+		return loader.GetCleanUrl(), nil
+	}
+	return "", errors.New("loader could not be found for this blog")
 }
 
 type Category struct {

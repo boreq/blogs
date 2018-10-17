@@ -7,9 +7,11 @@ import (
 )
 
 type Blog interface {
-	// GetUrl returns an url pointing to the home page of the blog. The url
-	// should not include the scheme.
+	// GetUrl returns an url pointing to the home page of the blog.
 	GetUrl() string
+
+	// GetCleanUrl returns an url which looks nice presented to the user.
+	GetCleanUrl() string
 
 	// GetPostUrl returns an url pointing to the specific post on the blog.
 	// The url should not include the scheme.
