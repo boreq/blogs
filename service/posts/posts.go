@@ -48,13 +48,28 @@ type ListOut struct {
 	Posts []dto.PostOut `json:"posts"`
 }
 
-func (p *PostsService) List(page dto.Page, sort ListSort, reverse bool, userId *uint) (ListOut, error) {
-	var amount uint
-	if err := p.db.Get(&amount, "SELECT COUNT(*) AS amount FROM post"); err != nil {
-		return ListOut{}, errors.Wrap(err, "could not count the posts")
+func (p *PostsService) ListForBlog(blogId uint, userId *uint) ([]dto.PostOut, error) {
+	query := `SELECT post.*, category.*, blog.*, star.id AS starred
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
+		WHERE blog.id=$2
+		GROUP BY post.id, category.id, blog.id, star.id
+		ORDER BY post.date DESC`
+
+	var posts []postResult
+	if err := p.db.Select(&posts, query, userId, blogId); err != nil {
+		return nil, errors.Wrap(err, "could not get the posts")
 	}
 
+	return toPostsOut(posts)
+}
+
+func (p *PostsService) List(page dto.Page, sort ListSort, reverse bool, userId *uint) (ListOut, error) {
 	limit, offset := sqlutils.LimitOffset(page)
+
+	queryAmount := "SELECT COUNT(*) AS amount FROM post"
 
 	query := `SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post
@@ -65,11 +80,20 @@ func (p *PostsService) List(page dto.Page, sort ListSort, reverse bool, userId *
 		ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
 		LIMIT $2 OFFSET $3`
 
+	var amount uint
+	if err := p.db.Get(&amount, queryAmount); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not count the posts")
+	}
+
 	var posts []postResult
 	if err := p.db.Select(&posts, query, userId, limit, offset); err != nil {
 		return ListOut{}, errors.Wrap(err, "could not get the posts")
 	}
 
+	return toListOut(page, amount, posts)
+}
+
+func toListOut(page dto.Page, amount uint, posts []postResult) (ListOut, error) {
 	postsOut, err := toPostsOut(posts)
 	if err != nil {
 		return ListOut{}, errors.Wrap(err, "could not convert to posts out")

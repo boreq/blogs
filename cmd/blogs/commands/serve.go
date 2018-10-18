@@ -40,7 +40,7 @@ func runServe(c guinea.Context) error {
 	postsService := postsService.New(database.DB)
 
 	blogs := blogs.New("/blogs", blogsService)
-	blog := blog.New("/blog", blogService)
+	blog := blog.New("/blog", blogService, postsService)
 	auth := auth.New("/auth")
 	posts := posts.New("/posts", postsService)
 

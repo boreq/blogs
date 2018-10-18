@@ -61,3 +61,8 @@ type PostOut struct {
 	Url      string            `json:"url"`
 	Starred  bool              `json:"starred"`
 }
+
+type TagOut struct {
+	database.Tag
+	Posts int `json:"posts"`
+}
