@@ -7,21 +7,6 @@ import (
 	"time"
 )
 
-type Page struct {
-	// Page is the page number.
-	Page int `json:"page"`
-
-	// PerPage specifies the number of items on a single page.
-	PerPage int `json:"perPage"`
-}
-
-type PageOut struct {
-	Page
-
-	// AllItems is the number of all pages/number of the last page.
-	AllItems int `json:"allItems"`
-}
-
 type ScannableTime struct {
 	time.Time
 }
@@ -46,10 +31,33 @@ func (t ScannableTime) String() string {
 	return utils.ISO8601(t.Time)
 }
 
+type Page struct {
+	// Page is the page number.
+	Page int `json:"page"`
+
+	// PerPage specifies the number of items on a single page.
+	PerPage int `json:"perPage"`
+}
+
+type PageOut struct {
+	Page
+
+	// AllItems is the number of all available items.
+	AllItems int `json:"allItems"`
+}
+
 type BlogOut struct {
 	database.Blog
 	LastPost   *ScannableTime `json:"lastPost,omitempty"`
 	Url        string         `json:"url"`
 	CleanUrl   string         `json:"cleanUrl"`
 	Subscribed bool           `json:"subscribed"`
+}
+
+type PostOut struct {
+	database.Post
+	Category database.Category `json:"category"`
+	Blog     database.Blog     `json:"blog"`
+	Url      string            `json:"url"`
+	Starred  bool              `json:"starred"`
 }

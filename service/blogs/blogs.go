@@ -5,6 +5,7 @@ import (
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/dto"
 	"github.com/boreq/blogs/logging"
+	sqlutils "github.com/boreq/blogs/utils/sql"
 	"github.com/boreq/sqlx"
 	"github.com/pkg/errors"
 )
@@ -47,7 +48,7 @@ func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *
 		return ListOut{}, errors.Wrap(err, "could not count the blogs")
 	}
 
-	limit, offset := limitOffset(page)
+	limit, offset := sqlutils.LimitOffset(page)
 
 	var blogs []blogResult
 	if err := b.db.Select(&blogs,
@@ -57,7 +58,7 @@ func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *
 		LEFT JOIN post ON post.category_id=category.id
 		LEFT JOIN subscription ON subscription.blog_id=blog.id AND subscription.user_id=$1
 		GROUP BY blog.id, subscription.id
-		ORDER BY `+string(sort)+` `+order(reverse)+`
+		ORDER BY `+string(sort)+` `+sqlutils.Order(reverse)+`
 		LIMIT $2 OFFSET $3`, userId, limit, offset); err != nil {
 		return ListOut{}, errors.Wrap(err, "could not get the blogs")
 	}
@@ -98,19 +99,4 @@ func toBlogsOut(blogResults []blogResult) ([]dto.BlogOut, error) {
 		blogsOut = append(blogsOut, blogOut)
 	}
 	return blogsOut, nil
-}
-
-func order(reverse bool) string {
-	if reverse {
-		return "DESC"
-	} else {
-		return "ASC"
-	}
-}
-
-func limitOffset(page dto.Page) (int, int) {
-	offset := page.PerPage * (page.Page - 1)
-	limit := page.PerPage
-	return limit, offset
-
 }

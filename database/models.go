@@ -49,21 +49,21 @@ func (blog Blog) GetCleanUrl() (string, error) {
 }
 
 type Category struct {
-	ID     uint
-	BlogID uint
+	ID     uint `json:"id"`
+	BlogID uint `json:"-"`
 
-	Name string
+	Name string `json:"name"`
 }
 
 type Post struct {
-	ID         uint
-	CategoryID uint
+	ID         uint `json:"id"`
+	CategoryID uint `json:"-"`
 
-	InternalID string
-	Title      string
-	Summary    string
-	Date       time.Time
-	Stars      int
+	InternalID string    `json:"-"`
+	Title      string    `json:"title"`
+	Summary    string    `json:"summary"`
+	Date       time.Time `json:"date"`
+	Stars      int       `json:"stars"`
 }
 
 type Tag struct {
