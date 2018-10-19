@@ -48,6 +48,70 @@ type ListOut struct {
 	Posts []dto.PostOut `json:"posts"`
 }
 
+func (p *PostsService) ListFromSubscriptions(page dto.Page, sort ListSort, reverse bool, userId uint) (ListOut, error) {
+	queryAmount := `SELECT COUNT(*) AS numPosts
+			FROM post
+			JOIN category ON category.id = post.category_id
+			JOIN blog ON blog.id = category.blog_id
+			JOIN subscription ON blog.id = subscription.blog_id
+			WHERE subscription.user_id=$1`
+
+	query := `SELECT post.*, category.*, blog.*, star.id AS starred
+			FROM post
+			JOIN category ON category.id = post.category_id
+			JOIN blog ON blog.id = category.blog_id
+			JOIN subscription ON blog.id = subscription.blog_id
+			LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
+			WHERE subscription.user_id=$1
+			ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
+			LIMIT $2 OFFSET $3`
+
+	limit, offset := sqlutils.LimitOffset(page)
+
+	var amount uint
+	if err := p.db.Get(&amount, queryAmount, userId); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not count the posts")
+	}
+
+	var posts []postResult
+	if err := p.db.Select(&posts, query, userId, limit, offset); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not get the posts")
+	}
+
+	return toListOut(page, amount, posts)
+}
+func (p *PostsService) ListStarred(page dto.Page, sort ListSort, reverse bool, userId uint) (ListOut, error) {
+	queryAmount := `SELECT COUNT(*) AS numPosts
+			FROM post
+			JOIN star ON star.post_id = post.id
+			JOIN "user" ON "user".id = star.user_id
+			WHERE "user".id=$1`
+
+	query := `SELECT post.*, category.*, blog.*, star.id AS starred
+			FROM post
+			JOIN category ON category.id = post.category_id
+			JOIN blog ON blog.id = category.blog_id
+			JOIN star ON star.post_id = post.id
+			JOIN "user" ON "user".id = star.user_id
+			WHERE "user".id=$1
+			ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
+			LIMIT $2 OFFSET $3`
+
+	limit, offset := sqlutils.LimitOffset(page)
+
+	var amount uint
+	if err := p.db.Get(&amount, queryAmount, userId); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not count the posts")
+	}
+
+	var posts []postResult
+	if err := p.db.Select(&posts, query, userId, limit, offset); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not get the posts")
+	}
+
+	return toListOut(page, amount, posts)
+}
+
 func (p *PostsService) ListForBlog(blogId uint, userId *uint) ([]dto.PostOut, error) {
 	query := `SELECT post.*, category.*, blog.*, star.id AS starred
 		FROM post

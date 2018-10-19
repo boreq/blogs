@@ -11,29 +11,30 @@ import (
 )
 
 var log = logging.New("views/post")
+var invalidPostIdError = api.NewError(http.StatusBadRequest, "Invalid post id.")
 
 func New(prefix string, postService *post.PostService) *Post {
 	rv := &Post{
-		Prefix:      prefix,
-		PostService: postService,
+		prefix:      prefix,
+		postService: postService,
 	}
 	return rv
 }
 
 type Post struct {
-	Prefix      string
-	PostService *post.PostService
+	prefix      string
+	postService *post.PostService
 }
 
 func (p *Post) Register(router *httprouter.Router) {
-	router.POST(p.Prefix+"/:id/star", api.Wrap(p.star))
-	router.POST(p.Prefix+"/:id/unstar", api.Wrap(p.unstar))
+	router.POST(p.prefix+"/:id/star", api.Wrap(p.star))
+	router.POST(p.prefix+"/:id/unstar", api.Wrap(p.unstar))
 }
 
 func (b *Post) star(r *http.Request, ps httprouter.Params) (api.Response, api.Error) {
-	blogId, err := strconv.ParseUint(ps.ByName("id"), 10, 32)
+	postId, err := b.getPostId(ps)
 	if err != nil {
-		return nil, api.NewError(http.StatusBadRequest, "Invalid post id.")
+		return nil, invalidPostIdError
 	}
 
 	ctx := context.Get(r)
@@ -42,7 +43,7 @@ func (b *Post) star(r *http.Request, ps httprouter.Params) (api.Response, api.Er
 	}
 	userId := ctx.User.GetUser().ID
 
-	if err := b.PostService.Star(uint(blogId), userId); err != nil {
+	if err := b.postService.Star(postId, userId); err != nil {
 		log.Error("star error", "err", err)
 		return nil, api.InternalServerError
 	}
@@ -50,9 +51,9 @@ func (b *Post) star(r *http.Request, ps httprouter.Params) (api.Response, api.Er
 }
 
 func (b *Post) unstar(r *http.Request, ps httprouter.Params) (api.Response, api.Error) {
-	blogId, err := strconv.ParseUint(ps.ByName("id"), 10, 32)
+	postId, err := b.getPostId(ps)
 	if err != nil {
-		return nil, api.NewError(http.StatusBadRequest, "Invalid post id.")
+		return nil, invalidPostIdError
 	}
 
 	ctx := context.Get(r)
@@ -61,9 +62,14 @@ func (b *Post) unstar(r *http.Request, ps httprouter.Params) (api.Response, api.
 	}
 	userId := ctx.User.GetUser().ID
 
-	if err := b.PostService.Unstar(uint(blogId), userId); err != nil {
+	if err := b.postService.Unstar(postId, userId); err != nil {
 		log.Error("unstar error", "err", err)
 		return nil, api.InternalServerError
 	}
 	return api.NewResponseOk(nil), nil
+}
+
+func (b *Post) getPostId(ps httprouter.Params) (uint, error) {
+	postId, err := strconv.ParseUint(ps.ByName("id"), 10, 32)
+	return uint(postId), err
 }
