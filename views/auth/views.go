@@ -1,25 +1,31 @@
 package auth
 
 import (
-	"github.com/boreq/blogs/auth"
 	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/forms"
 	"github.com/boreq/blogs/http/api"
-	"github.com/boreq/blogs/http/context"
-	//"github.com/boreq/blogs/http/context"
+	"github.com/boreq/blogs/logging"
+	"github.com/boreq/blogs/service/auth"
+	"github.com/boreq/blogs/service/context"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-func New(prefix string) *Auth {
+var log = logging.New("views/auth")
+
+func New(prefix string, authService *auth.AuthService, contextService *context.ContextService) *Auth {
 	rv := &Auth{
-		Prefix: prefix,
+		Prefix:         prefix,
+		authService:    authService,
+		contextService: contextService,
 	}
 	return rv
 }
 
 type Auth struct {
-	Prefix string
+	Prefix         string
+	authService    *auth.AuthService
+	contextService *context.ContextService
 }
 
 func (a *Auth) Register(router *httprouter.Router) {
@@ -58,9 +64,9 @@ func (a *Auth) register(r *http.Request, _ httprouter.Params) (api.Response, api
 	}
 	form, usernameField, passwordField := makeRegisterForm()
 	if form.Validate(getFormValue) {
-		err := auth.CreateUser(usernameField.GetValue(), passwordField.GetValue())
+		err := a.authService.CreateUser(usernameField.GetValue(), passwordField.GetValue())
 		if err == nil {
-			user, sessionKey, err := auth.LoginUser(usernameField.GetValue(), passwordField.GetValue())
+			user, sessionKey, err := a.authService.LoginUser(usernameField.GetValue(), passwordField.GetValue())
 			response := userWithSessionKey{
 				User:       user,
 				SessionKey: sessionKey,
@@ -73,6 +79,7 @@ func (a *Auth) register(r *http.Request, _ httprouter.Params) (api.Response, api
 			if err == auth.UsernameTakenError {
 				usernameField.AddError("Username is already taken")
 			} else {
+				log.Error("register error", "err", err)
 				return nil, api.InternalServerError
 			}
 		}
@@ -88,12 +95,12 @@ func (a *Auth) login(r *http.Request, _ httprouter.Params) (api.Response, api.Er
 	}
 	form, usernameField, passwordField := makeLoginForm()
 	if form.Validate(getFormValue) {
-		user, sessionKey, err := auth.LoginUser(usernameField.GetValue(), passwordField.GetValue())
+		user, sessionKey, err := a.authService.LoginUser(usernameField.GetValue(), passwordField.GetValue())
 		if err != nil {
 			if err == auth.InvalidUsernameOrPasswordError {
 				form.AddError("Invalid username or password")
 			} else {
-				// TODO log
+				log.Error("login error", "err", err)
 				return nil, api.InternalServerError
 			}
 		} else {
@@ -109,7 +116,7 @@ func (a *Auth) login(r *http.Request, _ httprouter.Params) (api.Response, api.Er
 }
 
 func (a *Auth) checkLogin(r *http.Request, _ httprouter.Params) (api.Response, api.Error) {
-	ctx := context.Get(r)
+	ctx := a.contextService.Get(r)
 	if ctx.User.IsAuthenticated() {
 		user := ctx.User.GetUser()
 		return api.NewResponseOk(user), nil
@@ -118,37 +125,10 @@ func (a *Auth) checkLogin(r *http.Request, _ httprouter.Params) (api.Response, a
 }
 
 func (a *Auth) logout(r *http.Request, _ httprouter.Params) (api.Response, api.Error) {
-	err := auth.LogoutUser(r)
+	err := a.authService.LogoutUser(r)
 	if err != nil {
-		// TODO log
+		log.Error("logout error", "err", err)
 		return nil, api.InternalServerError
 	}
 	return api.NewResponseOk(nil), nil
-}
-
-func settingsSessions(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	//	userId := context.Get(r).User.GetUser().ID
-	//
-	////	currentSessionKey := ""
-	//	if sessionCookie, err := r.Cookie(auth.SessionKeyCookieName); err == nil {
-	//		currentSessionKey = sessionCookie.Value
-	//	}
-	//
-	//	var sessions []database.UserSession
-	//	if err := database.DB.Select(&sessions,
-	//		`SELECT *
-	//		FROM user_session
-	//		WHERE user_id=$1
-	//		ORDER BY last_seen DESC`, userId); err != nil {
-	//		//		verrors.InternalServerErrorWithStack(w, r, err)
-	//		return
-	//	}
-
-	//var data = templates.GetDefaultData(r)
-	//data["sessions"] = sessions
-	//data["currentSessionKey"] = currentSessionKey
-	//if err := templates.RenderTemplateSafe(w, "auth/settings_sessions.tmpl", data); err != nil {
-	//	verrors.InternalServerErrorWithStack(w, r, err)
-	//	return
-	//}
 }

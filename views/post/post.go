@@ -2,8 +2,8 @@ package post
 
 import (
 	"github.com/boreq/blogs/http/api"
-	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
+	"github.com/boreq/blogs/service/context"
 	"github.com/boreq/blogs/service/posts"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -13,17 +13,19 @@ import (
 var log = logging.New("views/post")
 var invalidPostIdError = api.NewError(http.StatusBadRequest, "Invalid post id.")
 
-func New(prefix string, postService *posts.PostsService) *Post {
+func New(prefix string, postService *posts.PostsService, contextService *context.ContextService) *Post {
 	rv := &Post{
-		prefix:       prefix,
-		postsService: postService,
+		prefix:         prefix,
+		postsService:   postService,
+		contextService: contextService,
 	}
 	return rv
 }
 
 type Post struct {
-	prefix       string
-	postsService *posts.PostsService
+	prefix         string
+	postsService   *posts.PostsService
+	contextService *context.ContextService
 }
 
 func (p *Post) Register(router *httprouter.Router) {
@@ -37,7 +39,7 @@ func (b *Post) star(r *http.Request, ps httprouter.Params) (api.Response, api.Er
 		return nil, invalidPostIdError
 	}
 
-	ctx := context.Get(r)
+	ctx := b.contextService.Get(r)
 	if !ctx.User.IsAuthenticated() {
 		return nil, api.UnauthorizedError
 	}
@@ -56,7 +58,7 @@ func (b *Post) unstar(r *http.Request, ps httprouter.Params) (api.Response, api.
 		return nil, invalidPostIdError
 	}
 
-	ctx := context.Get(r)
+	ctx := b.contextService.Get(r)
 	if !ctx.User.IsAuthenticated() {
 		return nil, api.UnauthorizedError
 	}

@@ -3,9 +3,11 @@ package commands
 import (
 	"github.com/boreq/blogs/config"
 	"github.com/boreq/blogs/database"
-	"github.com/boreq/blogs/http/handler"
+	bhttp "github.com/boreq/blogs/http"
+	authService "github.com/boreq/blogs/service/auth"
 	blogService "github.com/boreq/blogs/service/blog"
 	blogsService "github.com/boreq/blogs/service/blogs"
+	contextService "github.com/boreq/blogs/service/context"
 	postsService "github.com/boreq/blogs/service/posts"
 	tagService "github.com/boreq/blogs/service/tag"
 	"github.com/boreq/blogs/views/auth"
@@ -41,14 +43,16 @@ func runServe(c guinea.Context) error {
 	blogService := blogService.New(database.DB)
 	postsService := postsService.New(database.DB)
 	tagService := tagService.New(database.DB)
+	authService := authService.New(database.DB)
+	contextService := contextService.New(authService)
 
-	auth := auth.New("/auth")
-	blogs := blogs.New("/blogs", blogsService)
-	blog := blog.New("/blog", blogService, postsService)
-	posts := posts.New("/posts", postsService, tagService)
-	post := post.New("/post", postsService)
+	auth := auth.New("/auth", authService, contextService)
+	blogs := blogs.New("/blogs", blogsService, contextService)
+	blog := blog.New("/blog", blogService, postsService, contextService)
+	posts := posts.New("/posts", postsService, tagService, contextService)
+	post := post.New("/post", postsService, contextService)
 
-	registerers := []handler.Registerer{
+	registerers := []bhttp.Registerer{
 		auth,
 		blogs,
 		blog,
@@ -56,5 +60,5 @@ func runServe(c guinea.Context) error {
 		post,
 	}
 
-	return http.ListenAndServe(config.Config.ServeAddress, handler.New(registerers))
+	return http.ListenAndServe(config.Config.ServeAddress, bhttp.New(registerers, contextService))
 }

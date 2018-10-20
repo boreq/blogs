@@ -2,9 +2,9 @@ package blogs
 
 import (
 	"github.com/boreq/blogs/http/api"
-	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
 	"github.com/boreq/blogs/service/blogs"
+	"github.com/boreq/blogs/service/context"
 	"github.com/boreq/blogs/views"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -12,22 +12,24 @@ import (
 
 var log = logging.New("views/blogs")
 
-func New(prefix string, blogsService *blogs.BlogsService) *Blogs {
+func New(prefix string, blogsService *blogs.BlogsService, contextService *context.ContextService) *Blogs {
 	rv := &Blogs{
-		Prefix:       prefix,
-		BlogsService: blogsService,
+		prefix:         prefix,
+		blogsService:   blogsService,
+		contextService: contextService,
 	}
 	return rv
 }
 
 type Blogs struct {
-	Prefix       string
-	BlogsService *blogs.BlogsService
+	prefix         string
+	blogsService   *blogs.BlogsService
+	contextService *context.ContextService
 }
 
 func (b *Blogs) Register(router *httprouter.Router) {
-	router.GET(b.Prefix+"/list", api.Wrap(b.list))
-	router.GET(b.Prefix+"/list/subscribed", api.Wrap(b.listSubscribed))
+	router.GET(b.prefix+"/list", api.Wrap(b.list))
+	router.GET(b.prefix+"/list/subscribed", api.Wrap(b.listSubscribed))
 }
 
 func (b *Blogs) listSubscribed(r *http.Request, p httprouter.Params) (api.Response, api.Error) {
@@ -42,13 +44,13 @@ func (b *Blogs) listSubscribed(r *http.Request, p httprouter.Params) (api.Respon
 		sort = blogs.SortTitle
 	}
 
-	ctx := context.Get(r)
+	ctx := b.contextService.Get(r)
 	if !ctx.User.IsAuthenticated() {
 		return nil, api.UnauthorizedError
 	}
 	userId := ctx.User.GetUser().ID
 
-	blogs, err := b.BlogsService.ListSubscribed(page, sort, reverse, userId)
+	blogs, err := b.blogsService.ListSubscribed(page, sort, reverse, userId)
 	if err != nil {
 		log.Error("list error", "err", err)
 		return nil, api.InternalServerError
@@ -68,11 +70,11 @@ func (b *Blogs) list(r *http.Request, p httprouter.Params) (api.Response, api.Er
 		sort = blogs.SortTitle
 	}
 	var userId *uint = nil
-	ctx := context.Get(r)
+	ctx := b.contextService.Get(r)
 	if ctx.User.IsAuthenticated() {
 		userId = &ctx.User.GetUser().ID
 	}
-	blogs, err := b.BlogsService.List(page, sort, reverse, userId)
+	blogs, err := b.blogsService.List(page, sort, reverse, userId)
 	if err != nil {
 		log.Error("list error", "err", err)
 		return nil, api.InternalServerError

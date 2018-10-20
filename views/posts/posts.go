@@ -2,8 +2,8 @@ package posts
 
 import (
 	"github.com/boreq/blogs/http/api"
-	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
+	"github.com/boreq/blogs/service/context"
 	"github.com/boreq/blogs/service/posts"
 	"github.com/boreq/blogs/service/tag"
 	"github.com/boreq/blogs/views"
@@ -13,18 +13,20 @@ import (
 
 var log = logging.New("views/posts")
 
-func New(prefix string, postsService *posts.PostsService, tagService *tag.TagService) *Posts {
+func New(prefix string, postsService *posts.PostsService, tagService *tag.TagService, contextService *context.ContextService) *Posts {
 	rv := &Posts{
-		Prefix:       prefix,
-		PostsService: postsService,
+		Prefix:         prefix,
+		postsService:   postsService,
+		contextService: contextService,
 	}
 	return rv
 }
 
 type Posts struct {
-	Prefix       string
-	TagService   *tag.TagService
-	PostsService *posts.PostsService
+	Prefix         string
+	tagService     *tag.TagService
+	postsService   *posts.PostsService
+	contextService *context.ContextService
 }
 
 func (p *Posts) Register(router *httprouter.Router) {
@@ -45,13 +47,13 @@ func (p *Posts) listFromSubscriptions(r *http.Request, ps httprouter.Params) (ap
 		sort = posts.SortDate
 	}
 
-	ctx := context.Get(r)
+	ctx := p.contextService.Get(r)
 	if !ctx.User.IsAuthenticated() {
 		return nil, api.UnauthorizedError
 	}
 	userId := ctx.User.GetUser().ID
 
-	posts, err := p.PostsService.ListFromSubscriptions(page, sort, reverse, userId)
+	posts, err := p.postsService.ListFromSubscriptions(page, sort, reverse, userId)
 	if err != nil {
 		log.Error("listFromSubscriptions error", "err", err)
 		return nil, api.InternalServerError
@@ -71,13 +73,13 @@ func (p *Posts) listStarred(r *http.Request, ps httprouter.Params) (api.Response
 		sort = posts.SortDate
 	}
 
-	ctx := context.Get(r)
+	ctx := p.contextService.Get(r)
 	if !ctx.User.IsAuthenticated() {
 		return nil, api.UnauthorizedError
 	}
 	userId := ctx.User.GetUser().ID
 
-	posts, err := p.PostsService.ListStarred(page, sort, reverse, userId)
+	posts, err := p.postsService.ListStarred(page, sort, reverse, userId)
 	if err != nil {
 		log.Error("listStarred error", "err", err)
 		return nil, api.InternalServerError
@@ -97,11 +99,11 @@ func (p *Posts) list(r *http.Request, ps httprouter.Params) (api.Response, api.E
 		sort = posts.SortDate
 	}
 	var userId *uint = nil
-	ctx := context.Get(r)
+	ctx := p.contextService.Get(r)
 	if ctx.User.IsAuthenticated() {
 		userId = &ctx.User.GetUser().ID
 	}
-	posts, err := p.PostsService.List(page, sort, reverse, userId)
+	posts, err := p.postsService.List(page, sort, reverse, userId)
 	if err != nil {
 		log.Error("list error", "err", err)
 		return nil, api.InternalServerError
