@@ -2,7 +2,9 @@ package tag
 
 import (
 	"github.com/boreq/blogs/database"
+	"github.com/boreq/blogs/dto"
 	"github.com/boreq/blogs/logging"
+	"github.com/boreq/blogs/service/posts"
 	"github.com/boreq/sqlx"
 )
 
@@ -32,4 +34,38 @@ func (b *TagService) GetForPost(postId uint) ([]database.Tag, error) {
 		return nil, err
 	}
 	return tags, nil
+}
+
+func (b *TagService) AddTags(listOut posts.ListOut) (ListOutWithTags, error) {
+	postsOut, err := b.AddTagsToPosts(listOut.Posts)
+	if err != nil {
+		return ListOutWithTags{}, err
+	}
+	rv := ListOutWithTags{
+		Page:  listOut.Page,
+		Posts: postsOut,
+	}
+	return rv, nil
+}
+
+func (b *TagService) AddTagsToPosts(posts []dto.PostOut) ([]PostOutWithTags, error) {
+	postsOut := make([]PostOutWithTags, 0)
+	for _, postOut := range posts {
+		tags, err := b.GetForPost(postOut.Post.ID)
+		if err != nil {
+			return nil, err
+		}
+		postsOut = append(postsOut, PostOutWithTags{postOut, tags})
+	}
+	return postsOut, nil
+}
+
+type PostOutWithTags struct {
+	dto.PostOut
+	Tags []database.Tag `json:"tags"`
+}
+
+type ListOutWithTags struct {
+	Page  dto.PageOut       `json:"page"`
+	Posts []PostOutWithTags `json:"posts"`
 }

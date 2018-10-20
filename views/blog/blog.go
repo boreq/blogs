@@ -6,6 +6,7 @@ import (
 	"github.com/boreq/blogs/service/blog"
 	"github.com/boreq/blogs/service/context"
 	"github.com/boreq/blogs/service/posts"
+	"github.com/boreq/blogs/service/tag"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
@@ -14,11 +15,12 @@ import (
 var log = logging.New("views/blog")
 var invalidBlogIdError = api.NewError(http.StatusBadRequest, "Invalid blog id.")
 
-func New(prefix string, blogService *blog.BlogService, postsService *posts.PostsService, contextService *context.ContextService) *Blog {
+func New(prefix string, blogService *blog.BlogService, postsService *posts.PostsService, tagService *tag.TagService, contextService *context.ContextService) *Blog {
 	rv := &Blog{
 		prefix:         prefix,
 		blogService:    blogService,
 		postsService:   postsService,
+		tagService:     tagService,
 		contextService: contextService,
 	}
 	return rv
@@ -28,6 +30,7 @@ type Blog struct {
 	prefix         string
 	blogService    *blog.BlogService
 	postsService   *posts.PostsService
+	tagService     *tag.TagService
 	contextService *context.ContextService
 }
 
@@ -138,12 +141,17 @@ func (b *Blog) posts(r *http.Request, p httprouter.Params) (api.Response, api.Er
 		userId = &ctx.User.GetUser().ID
 	}
 
-	posts, err := b.postsService.ListForBlog(uint(blogId), userId)
+	listOut, err := b.postsService.ListForBlog(uint(blogId), userId)
 	if err != nil {
 		log.Error("posts error", "err", err)
 		return nil, api.InternalServerError
 	}
-	return api.NewResponseOk(posts), nil
+	listOutWithTags, err := b.tagService.AddTagsToPosts(listOut)
+	if err != nil {
+		log.Error("list add tags error", "err", err)
+		return nil, api.InternalServerError
+	}
+	return api.NewResponseOk(listOutWithTags), nil
 }
 
 func getBlogId(p httprouter.Params) (uint, error) {

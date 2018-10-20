@@ -1,7 +1,6 @@
 package posts
 
 import (
-	"github.com/boreq/blogs/database"
 	"github.com/boreq/blogs/dto"
 	"github.com/boreq/blogs/http/api"
 	"github.com/boreq/blogs/logging"
@@ -54,9 +53,9 @@ func (p *Posts) listFromSubscriptions(r *http.Request, ps httprouter.Params) (ap
 		log.Error("listFromSubscriptions error", "err", err)
 		return nil, api.InternalServerError
 	}
-	listOutWithTags, err := p.addTags(listOut)
+	listOutWithTags, err := p.tagService.AddTags(listOut)
 	if err != nil {
-		log.Error("listStarred add tags error", "err", err)
+		log.Error("listFromSubscriptions add tags error", "err", err)
 		return nil, api.InternalServerError
 	}
 	return api.NewResponseOk(listOutWithTags), nil
@@ -73,7 +72,7 @@ func (p *Posts) listStarred(r *http.Request, ps httprouter.Params) (api.Response
 		log.Error("listStarred error", "err", err)
 		return nil, api.InternalServerError
 	}
-	listOutWithTags, err := p.addTags(listOut)
+	listOutWithTags, err := p.tagService.AddTags(listOut)
 	if err != nil {
 		log.Error("listStarred add tags error", "err", err)
 		return nil, api.InternalServerError
@@ -88,7 +87,7 @@ func (p *Posts) list(r *http.Request, ps httprouter.Params) (api.Response, api.E
 		log.Error("list error", "err", err)
 		return nil, api.InternalServerError
 	}
-	listOutWithTags, err := p.addTags(listOut)
+	listOutWithTags, err := p.tagService.AddTags(listOut)
 	if err != nil {
 		log.Error("list add tags error", "err", err)
 		return nil, api.InternalServerError
@@ -109,31 +108,4 @@ func (p *Posts) getParams(r *http.Request) (dto.Page, posts.ListSort, bool, *uin
 		userId = &ctx.User.GetUser().ID
 	}
 	return page, sort, reverse, userId
-}
-
-type postOutWithTags struct {
-	dto.PostOut
-	Tags []database.Tag `json:"tags"`
-}
-
-type listOutWithTags struct {
-	Page  dto.PageOut       `json:"page"`
-	Posts []postOutWithTags `json:"posts"`
-}
-
-func (p *Posts) addTags(listOut posts.ListOut) (listOutWithTags, error) {
-	postsOut := make([]postOutWithTags, 0)
-	for _, postOut := range listOut.Posts {
-		log.Debug("pulling in tags", "postId", postOut.Post.ID)
-		tags, err := p.tagService.GetForPost(postOut.Post.ID)
-		if err != nil {
-			return listOutWithTags{}, err
-		}
-		postsOut = append(postsOut, postOutWithTags{postOut, tags})
-	}
-	rv := listOutWithTags{
-		Page:  listOut.Page,
-		Posts: postsOut,
-	}
-	return rv, nil
 }
