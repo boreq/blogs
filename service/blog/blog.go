@@ -90,7 +90,7 @@ func (b *BlogService) GetCategories(blogId uint) ([]database.Category, error) {
 		FROM category
 		JOIN blog ON blog.id=category.blog_id
 		WHERE blog.id=$1`
-	var categories []database.Category
+	categories := make([]database.Category, 0)
 	if err := database.DB.Select(&categories, query, blogId); err != nil {
 		return nil, errors.Wrap(err, "could not get categories")
 	}
@@ -106,7 +106,7 @@ func (b *BlogService) GetTags(blogId uint) ([]dto.TagOut, error) {
 		JOIN blog ON blog.id = category.blog_id
 		WHERE blog.id=$1
 		GROUP BY tag.id`
-	var tags []dto.TagOut
+	tags := make([]dto.TagOut, 0)
 	if err := database.DB.Select(&tags, query, blogId); err != nil {
 		return nil, errors.Wrap(err, "could not get tags")
 	}
