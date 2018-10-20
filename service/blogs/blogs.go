@@ -42,6 +42,39 @@ type ListOut struct {
 	Blogs []dto.BlogOut `json:"blogs"`
 }
 
+func (b *BlogsService) ListSubscribed(page dto.Page, sort ListSort, reverse bool, userId uint) (ListOut, error) {
+	queryCount := `SELECT COUNT(*) AS numBlogs
+		FROM blog
+		JOIN subscription ON subscription.blog_id = blog.id
+		JOIN "user" ON "user".id = subscription.user_id
+		WHERE "user".id=$1`
+
+	query := `SELECT blog.*, MAX(post.date) AS last_post, subscription.id AS subscribed
+		FROM blog
+		JOIN category ON category.blog_id=blog.id
+		JOIN post ON post.category_id=category.id
+		JOIN subscription ON subscription.blog_id = blog.id
+		JOIN "user" ON "user".id = subscription.user_id
+		WHERE "user".id=$1
+		GROUP BY blog.id, subscription.id
+		ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
+		LIMIT $2 OFFSET $3`
+
+	var amount uint
+	if err := b.db.Get(&amount, queryCount, userId); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not count the blogs")
+	}
+
+	limit, offset := sqlutils.LimitOffset(page)
+
+	var blogs []blogResult
+	if err := b.db.Select(&blogs, query, userId, limit, offset); err != nil {
+		return ListOut{}, errors.Wrap(err, "could not get the blogs")
+	}
+
+	return toListOut(blogs, page, amount)
+}
+
 func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *uint) (ListOut, error) {
 	var amount uint
 	if err := b.db.Get(&amount, "SELECT COUNT(*) AS amount FROM blog"); err != nil {
@@ -63,6 +96,10 @@ func (b *BlogsService) List(page dto.Page, sort ListSort, reverse bool, userId *
 		return ListOut{}, errors.Wrap(err, "could not get the blogs")
 	}
 
+	return toListOut(blogs, page, amount)
+}
+
+func toListOut(blogs []blogResult, page dto.Page, amount uint) (ListOut, error) {
 	blogsOut, err := toBlogsOut(blogs)
 	if err != nil {
 		return ListOut{}, errors.Wrap(err, "could not convert to blogs out")

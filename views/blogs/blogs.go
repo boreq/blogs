@@ -27,6 +27,33 @@ type Blogs struct {
 
 func (b *Blogs) Register(router *httprouter.Router) {
 	router.GET(b.Prefix+"/list", api.Wrap(b.list))
+	router.GET(b.Prefix+"/list/subscribed", api.Wrap(b.listSubscribed))
+}
+
+func (b *Blogs) listSubscribed(r *http.Request, p httprouter.Params) (api.Response, api.Error) {
+	page := views.GetPage(r)
+	reverse := views.GetSortReverse(r)
+	sort, ok := map[string]blogs.ListSort{
+		"title":         blogs.SortTitle,
+		"subscriptions": blogs.SortSubscribers,
+		"lastPost":      blogs.SortLastPost,
+	}[views.GetSort(r)]
+	if !ok {
+		sort = blogs.SortTitle
+	}
+
+	ctx := context.Get(r)
+	if !ctx.User.IsAuthenticated() {
+		return nil, api.UnauthorizedError
+	}
+	userId := ctx.User.GetUser().ID
+
+	blogs, err := b.BlogsService.ListSubscribed(page, sort, reverse, userId)
+	if err != nil {
+		log.Error("list error", "err", err)
+		return nil, api.InternalServerError
+	}
+	return api.NewResponseOk(blogs), nil
 }
 
 func (b *Blogs) list(r *http.Request, p httprouter.Params) (api.Response, api.Error) {
