@@ -6,8 +6,8 @@ import (
 	"github.com/boreq/blogs/http/handler"
 	blogService "github.com/boreq/blogs/service/blog"
 	blogsService "github.com/boreq/blogs/service/blogs"
-	postService "github.com/boreq/blogs/service/post"
 	postsService "github.com/boreq/blogs/service/posts"
+	tagService "github.com/boreq/blogs/service/tag"
 	"github.com/boreq/blogs/views/auth"
 	"github.com/boreq/blogs/views/blog"
 	"github.com/boreq/blogs/views/blogs"
@@ -40,13 +40,13 @@ func runServe(c guinea.Context) error {
 	blogsService := blogsService.New(database.DB)
 	blogService := blogService.New(database.DB)
 	postsService := postsService.New(database.DB)
-	postService := postService.New(database.DB)
+	tagService := tagService.New(database.DB)
 
 	auth := auth.New("/auth")
 	blogs := blogs.New("/blogs", blogsService)
 	blog := blog.New("/blog", blogService, postsService)
-	posts := posts.New("/posts", postsService)
-	post := post.New("/post", postService)
+	posts := posts.New("/posts", postsService, tagService)
+	post := post.New("/post", postsService)
 
 	registerers := []handler.Registerer{
 		auth,

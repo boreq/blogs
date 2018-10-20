@@ -5,6 +5,7 @@ import (
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
 	"github.com/boreq/blogs/service/posts"
+	"github.com/boreq/blogs/service/tag"
 	"github.com/boreq/blogs/views"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 
 var log = logging.New("views/posts")
 
-func New(prefix string, postsService *posts.PostsService) *Posts {
+func New(prefix string, postsService *posts.PostsService, tagService *tag.TagService) *Posts {
 	rv := &Posts{
 		Prefix:       prefix,
 		PostsService: postsService,
@@ -22,6 +23,7 @@ func New(prefix string, postsService *posts.PostsService) *Posts {
 
 type Posts struct {
 	Prefix       string
+	TagService   *tag.TagService
 	PostsService *posts.PostsService
 }
 

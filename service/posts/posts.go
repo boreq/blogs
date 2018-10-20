@@ -9,6 +9,7 @@ import (
 	sqlutils "github.com/boreq/blogs/utils/sql"
 	"github.com/boreq/sqlx"
 	"github.com/pkg/errors"
+	"time"
 )
 
 var log = logging.New("service/posts")
@@ -48,23 +49,47 @@ type ListOut struct {
 	Posts []dto.PostOut `json:"posts"`
 }
 
+func (p *PostsService) Star(postId uint, userId uint) error {
+	log.Debug("starring", "postId", postId, "userId", userId)
+	query := `INSERT INTO star(post_id, user_id, date)
+		SELECT $1, $2, $3
+		WHERE NOT EXISTS(
+			SELECT 1
+			FROM star
+			WHERE post_id=$1 AND user_id=$2)`
+	if _, err := p.db.Exec(query, postId, userId, time.Now().UTC()); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *PostsService) Unstar(postId uint, userId uint) error {
+	log.Debug("unstarring", "postId", postId, "userId", userId)
+	query := `DELETE FROM star
+		WHERE post_id=$1 AND user_id=$2`
+	if _, err := p.db.Exec(query, postId, userId); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *PostsService) ListFromSubscriptions(page dto.Page, sort ListSort, reverse bool, userId uint) (ListOut, error) {
 	queryAmount := `SELECT COUNT(*) AS numPosts
-			FROM post
-			JOIN category ON category.id = post.category_id
-			JOIN blog ON blog.id = category.blog_id
-			JOIN subscription ON blog.id = subscription.blog_id
-			WHERE subscription.user_id=$1`
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		JOIN subscription ON blog.id = subscription.blog_id
+		WHERE subscription.user_id=$1`
 
 	query := `SELECT post.*, category.*, blog.*, star.id AS starred
-			FROM post
-			JOIN category ON category.id = post.category_id
-			JOIN blog ON blog.id = category.blog_id
-			JOIN subscription ON blog.id = subscription.blog_id
-			LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
-			WHERE subscription.user_id=$1
-			ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
-			LIMIT $2 OFFSET $3`
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		JOIN subscription ON blog.id = subscription.blog_id
+		LEFT JOIN star ON star.post_id=post.id AND star.user_id=$1
+		WHERE subscription.user_id=$1
+		ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
+		LIMIT $2 OFFSET $3`
 
 	limit, offset := sqlutils.LimitOffset(page)
 
@@ -82,20 +107,20 @@ func (p *PostsService) ListFromSubscriptions(page dto.Page, sort ListSort, rever
 }
 func (p *PostsService) ListStarred(page dto.Page, sort ListSort, reverse bool, userId uint) (ListOut, error) {
 	queryAmount := `SELECT COUNT(*) AS numPosts
-			FROM post
-			JOIN star ON star.post_id = post.id
-			JOIN "user" ON "user".id = star.user_id
-			WHERE "user".id=$1`
+		FROM post
+		JOIN star ON star.post_id = post.id
+		JOIN "user" ON "user".id = star.user_id
+		WHERE "user".id=$1`
 
 	query := `SELECT post.*, category.*, blog.*, star.id AS starred
-			FROM post
-			JOIN category ON category.id = post.category_id
-			JOIN blog ON blog.id = category.blog_id
-			JOIN star ON star.post_id = post.id
-			JOIN "user" ON "user".id = star.user_id
-			WHERE "user".id=$1
-			ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
-			LIMIT $2 OFFSET $3`
+		FROM post
+		JOIN category ON category.id = post.category_id
+		JOIN blog ON blog.id = category.blog_id
+		JOIN star ON star.post_id = post.id
+		JOIN "user" ON "user".id = star.user_id
+		WHERE "user".id=$1
+		ORDER BY ` + string(sort) + ` ` + sqlutils.Order(reverse) + `
+		LIMIT $2 OFFSET $3`
 
 	limit, offset := sqlutils.LimitOffset(page)
 

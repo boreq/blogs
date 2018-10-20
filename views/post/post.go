@@ -4,7 +4,7 @@ import (
 	"github.com/boreq/blogs/http/api"
 	"github.com/boreq/blogs/http/context"
 	"github.com/boreq/blogs/logging"
-	"github.com/boreq/blogs/service/post"
+	"github.com/boreq/blogs/service/posts"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
@@ -13,17 +13,17 @@ import (
 var log = logging.New("views/post")
 var invalidPostIdError = api.NewError(http.StatusBadRequest, "Invalid post id.")
 
-func New(prefix string, postService *post.PostService) *Post {
+func New(prefix string, postService *posts.PostsService) *Post {
 	rv := &Post{
-		prefix:      prefix,
-		postService: postService,
+		prefix:       prefix,
+		postsService: postService,
 	}
 	return rv
 }
 
 type Post struct {
-	prefix      string
-	postService *post.PostService
+	prefix       string
+	postsService *posts.PostsService
 }
 
 func (p *Post) Register(router *httprouter.Router) {
@@ -43,7 +43,7 @@ func (b *Post) star(r *http.Request, ps httprouter.Params) (api.Response, api.Er
 	}
 	userId := ctx.User.GetUser().ID
 
-	if err := b.postService.Star(postId, userId); err != nil {
+	if err := b.postsService.Star(postId, userId); err != nil {
 		log.Error("star error", "err", err)
 		return nil, api.InternalServerError
 	}
@@ -62,7 +62,7 @@ func (b *Post) unstar(r *http.Request, ps httprouter.Params) (api.Response, api.
 	}
 	userId := ctx.User.GetUser().ID
 
-	if err := b.postService.Unstar(postId, userId); err != nil {
+	if err := b.postsService.Unstar(postId, userId); err != nil {
 		log.Error("unstar error", "err", err)
 		return nil, api.InternalServerError
 	}
