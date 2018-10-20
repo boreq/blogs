@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const domain = "blog.golang.org"
+const domain = "https://blog.golang.org"
 const homeURL = "https://blog.golang.org/"
 const archiveURL = "https://blog.golang.org/index"
 

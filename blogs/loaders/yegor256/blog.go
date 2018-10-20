@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-const domain = "yegor256.com"
-const homeURL = "http://www.yegor256.com/"
-const archiveURL = "http://www.yegor256.com/contents.html"
+const domain = "https://www.yegor256.com"
+const homeURL = "https://www.yegor256.com/"
+const archiveURL = "https://www.yegor256.com/contents.html"
 
 func New() loaders.Blog {
 	return common.NewLoader(domain,

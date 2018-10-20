@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const domain = "ilikebigbits.com"
+const domain = "https://ilikebigbits.com"
 const homeURL = "http://www.ilikebigbits.com/"
 
 func New() loaders.Blog {

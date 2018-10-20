@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/boreq/blogs/blogs/loaders"
 	"github.com/boreq/blogs/logging"
+	"github.com/boreq/blogs/utils"
 	htmlutils "github.com/boreq/blogs/utils/html"
 	"golang.org/x/net/html"
 	"sync"
@@ -108,11 +109,11 @@ type loader struct {
 }
 
 func (l loader) GetUrl() string {
-	return l.homeURL
+	return l.domain
 }
 
 func (l loader) GetCleanUrl() string {
-	return l.domain
+	return tryCleanupUrl(l.domain)
 }
 
 func (l loader) GetPostUrl(internalID string) string {
@@ -184,4 +185,12 @@ func (l loader) yieldPost(n *html.Node, postChan chan<- loaders.Post, errorChan 
 		l.populatePost(node, &post)
 	})
 	postChan <- post
+}
+
+func tryCleanupUrl(s string) string {
+	clean, err := utils.CleanupUrl(s)
+	if err != nil {
+		return s
+	}
+	return clean
 }

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const domain = "datarebellion.com/blog"
+const domain = "https://datarebellion.com/blog"
 const homeURL = "https://datarebellion.com/blog/"
 
 func New() loaders.Blog {

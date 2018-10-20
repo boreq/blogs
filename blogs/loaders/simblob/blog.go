@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const domain = "simblob.blogspot.com"
+const domain = "https://simblob.blogspot.com"
 const homeURL = "https://simblob.blogspot.com/"
 
 var maxResultsRegexp = regexp.MustCompile("max-results=[0-9]+")

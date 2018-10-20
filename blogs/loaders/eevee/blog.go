@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const domain = "eev.ee"
+const domain = "https://eev.ee"
 const homeURL = "https://eev.ee/"
 const archiveURL = "https://eev.ee/everything/archives/"
 
