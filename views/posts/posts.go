@@ -1,6 +1,8 @@
 package posts
 
 import (
+	"github.com/boreq/blogs/database"
+	"github.com/boreq/blogs/dto"
 	"github.com/boreq/blogs/http/api"
 	"github.com/boreq/blogs/logging"
 	"github.com/boreq/blogs/service/context"
@@ -12,6 +14,12 @@ import (
 )
 
 var log = logging.New("views/posts")
+
+var sortMap = map[string]posts.ListSort{
+	"date":  posts.SortDate,
+	"stars": posts.SortStars,
+	"title": posts.SortTitle,
+}
 
 func New(prefix string, postsService *posts.PostsService, tagService *tag.TagService, contextService *context.ContextService) *Posts {
 	rv := &Posts{
@@ -36,65 +44,62 @@ func (p *Posts) Register(router *httprouter.Router) {
 }
 
 func (p *Posts) listFromSubscriptions(r *http.Request, ps httprouter.Params) (api.Response, api.Error) {
-	page := views.GetPage(r)
-	reverse := views.GetSortReverse(r)
-	sort, ok := map[string]posts.ListSort{
-		"date":  posts.SortDate,
-		"stars": posts.SortStars,
-		"title": posts.SortTitle,
-	}[views.GetSort(r)]
-	if !ok {
-		sort = posts.SortDate
-	}
-
-	ctx := p.contextService.Get(r)
-	if !ctx.User.IsAuthenticated() {
+	page, sort, reverse, userId := p.getParams(r)
+	if userId == nil {
 		return nil, api.UnauthorizedError
 	}
-	userId := ctx.User.GetUser().ID
 
-	posts, err := p.postsService.ListFromSubscriptions(page, sort, reverse, userId)
+	listOut, err := p.postsService.ListFromSubscriptions(page, sort, reverse, *userId)
 	if err != nil {
 		log.Error("listFromSubscriptions error", "err", err)
 		return nil, api.InternalServerError
 	}
-	return api.NewResponseOk(posts), nil
+	listOutWithTags, err := p.addTags(listOut)
+	if err != nil {
+		log.Error("listStarred add tags error", "err", err)
+		return nil, api.InternalServerError
+	}
+	return api.NewResponseOk(listOutWithTags), nil
 }
 
 func (p *Posts) listStarred(r *http.Request, ps httprouter.Params) (api.Response, api.Error) {
-	page := views.GetPage(r)
-	reverse := views.GetSortReverse(r)
-	sort, ok := map[string]posts.ListSort{
-		"date":  posts.SortDate,
-		"stars": posts.SortStars,
-		"title": posts.SortTitle,
-	}[views.GetSort(r)]
-	if !ok {
-		sort = posts.SortDate
-	}
-
-	ctx := p.contextService.Get(r)
-	if !ctx.User.IsAuthenticated() {
+	page, sort, reverse, userId := p.getParams(r)
+	if userId == nil {
 		return nil, api.UnauthorizedError
 	}
-	userId := ctx.User.GetUser().ID
 
-	posts, err := p.postsService.ListStarred(page, sort, reverse, userId)
+	listOut, err := p.postsService.ListStarred(page, sort, reverse, *userId)
 	if err != nil {
 		log.Error("listStarred error", "err", err)
 		return nil, api.InternalServerError
 	}
-	return api.NewResponseOk(posts), nil
+	listOutWithTags, err := p.addTags(listOut)
+	if err != nil {
+		log.Error("listStarred add tags error", "err", err)
+		return nil, api.InternalServerError
+	}
+	return api.NewResponseOk(listOutWithTags), nil
 }
 
 func (p *Posts) list(r *http.Request, ps httprouter.Params) (api.Response, api.Error) {
+	page, sort, reverse, userId := p.getParams(r)
+	listOut, err := p.postsService.List(page, sort, reverse, userId)
+	if err != nil {
+		log.Error("list error", "err", err)
+		return nil, api.InternalServerError
+	}
+	listOutWithTags, err := p.addTags(listOut)
+	if err != nil {
+		log.Error("list add tags error", "err", err)
+		return nil, api.InternalServerError
+	}
+	return api.NewResponseOk(listOutWithTags), nil
+}
+
+func (p *Posts) getParams(r *http.Request) (dto.Page, posts.ListSort, bool, *uint) {
 	page := views.GetPage(r)
 	reverse := views.GetSortReverse(r)
-	sort, ok := map[string]posts.ListSort{
-		"date":  posts.SortDate,
-		"stars": posts.SortStars,
-		"title": posts.SortTitle,
-	}[views.GetSort(r)]
+	sort, ok := sortMap[views.GetSort(r)]
 	if !ok {
 		sort = posts.SortDate
 	}
@@ -103,10 +108,32 @@ func (p *Posts) list(r *http.Request, ps httprouter.Params) (api.Response, api.E
 	if ctx.User.IsAuthenticated() {
 		userId = &ctx.User.GetUser().ID
 	}
-	posts, err := p.postsService.List(page, sort, reverse, userId)
-	if err != nil {
-		log.Error("list error", "err", err)
-		return nil, api.InternalServerError
+	return page, sort, reverse, userId
+}
+
+type postOutWithTags struct {
+	dto.PostOut
+	Tags []database.Tag `json:"tags"`
+}
+
+type listOutWithTags struct {
+	Page  dto.PageOut       `json:"page"`
+	Posts []postOutWithTags `json:"posts"`
+}
+
+func (p *Posts) addTags(listOut posts.ListOut) (listOutWithTags, error) {
+	postsOut := make([]postOutWithTags, 0)
+	for _, postOut := range listOut.Posts {
+		log.Debug("pulling in tags", "postId", postOut.Post.ID)
+		tags, err := p.tagService.GetForPost(postOut.Post.ID)
+		if err != nil {
+			return listOutWithTags{}, err
+		}
+		postsOut = append(postsOut, postOutWithTags{postOut, tags})
 	}
-	return api.NewResponseOk(posts), nil
+	rv := listOutWithTags{
+		Page:  listOut.Page,
+		Posts: postsOut,
+	}
+	return rv, nil
 }
